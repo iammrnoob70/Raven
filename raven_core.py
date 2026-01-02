@@ -56,6 +56,7 @@ class RavenCore:
         self.current_state = "idle"
         self.vision_enabled = False
         self.voice_enabled = False
+        self.language_mode = "banglish"  # Can be "english" or "banglish"
         
         # Speech engines
         self.recognizer = sr.Recognizer()
