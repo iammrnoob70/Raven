@@ -103,12 +103,11 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Upgrade Raven Assistant with:
-  1. Bengali Voice (Voice Out) - Replace pyttsx3 with edge-tts using 'bn-BD-NabanitaNeural' voice
-  2. Better Hearing (Voice In) - Improved ambient noise adjustment and pause threshold
-  3. Computer Control - Smart WhatsApp messaging with contacts dictionary and enhanced search
-  4. Modern UI - Floating, draggable, semi-transparent window with glow effects
-  5. Banglish Personality - Mix of Bengali and English in all responses
+  ELITE RAVEN - Complete Transformation:
+  1. Elite Dark UI (Glassmorphism) - Deep Charcoal (#0a0a0a) with 0.85 opacity, Neon Blue (#00f2ff) border, pulsing glows
+  2. Emotionally Human Logic - Mood detection (sad, tired, happy, angry, stressed), adaptive Banglish responses, mood memory
+  3. Universal File Opener - Automatic file path detection, opens PDFs/Docs/Images/Code with appropriate apps
+  4. Enhanced System Integration - Always on top, draggable, Bengali voice, bouncing avatar animations
 
 backend:
   - task: "Core Logic Upgrade (raven_core.py)"
