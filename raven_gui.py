@@ -475,17 +475,49 @@ class RavenGUI:
         print(f"[Terminal] Voice mode: {status}")
     
     def _voice_listener(self):
-        """Continuous voice listening loop"""
+        """Continuous voice listening loop with idle timeout messages"""
+        idle_counter = 0
+        last_activity_time = time.time()
+        
         while self.core.voice_enabled and self.core.mic_available:
             if not self.is_processing:
                 self.update_state("listening")
                 text = self.core.listen_for_voice()
                 
                 if text:
+                    # User spoke - reset idle counter
+                    idle_counter = 0
+                    last_activity_time = time.time()
                     self.add_message_to_chat("You (voice)", text)
                     self._process_message(text)
+                    
+                    # After processing, continue listening immediately
+                    continue
                 else:
-                    self.update_state("idle")
+                    # Check for idle timeout (30 seconds of silence)
+                    current_time = time.time()
+                    if current_time - last_activity_time > 30 and self.core.language_mode == "banglish":
+                        idle_counter += 1
+                        
+                        # Send witty idle messages (but not too frequently)
+                        if idle_counter == 1:
+                            witty_messages = [
+                                f"{self.core.USER_NAME}, চুপ করে আছেন কেন? কি ভাবছেন?",
+                                f"Don't ignore me, {self.core.USER_NAME}! কথা বলুন!",
+                                f"Hellooo? {self.core.USER_NAME}, আমি এখনো শুনছি...",
+                                f"কিছু বলবেন না, {self.core.USER_NAME}? আমি wait করছি!",
+                                f"{self.core.USER_NAME}, মনে হচ্ছে আপনি ব্যস্ত... কিছু help লাগবে?"
+                            ]
+                            import random
+                            witty_msg = random.choice(witty_messages)
+                            self.add_message_to_chat("Raven", witty_msg)
+                            if self.core.voice_enabled:
+                                self.core.speak(witty_msg)
+                            last_activity_time = current_time  # Reset timer after sending message
+                        elif idle_counter > 6:  # Reset after 3 minutes total
+                            idle_counter = 0
+                    
+                    self.update_state("listening")
             time.sleep(0.5)
         
         self.update_state("idle")
