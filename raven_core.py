@@ -512,7 +512,7 @@ class CommandsHandler:
                     return parts[1].strip()
         return None
     
-    def _send_whatsapp_message(self, phone: str, message: str, contact_name: str = None) -> str:
+    def _send_whatsapp_message(self, phone: str, message: str, contact_name: str = None, language_mode: str = "banglish") -> str:
         """Send WhatsApp message using web.whatsapp.com"""
         try:
             # Format phone number (remove spaces and special chars)
@@ -537,14 +537,23 @@ class CommandsHandler:
             import threading
             threading.Thread(target=auto_send, daemon=True).start()
             
-            name_text = f"{contact_name} ke" if contact_name else "WhatsApp e"
-            return f"Thik ache, {RavenCore.USER_NAME}! {name_text} message pathachi: '{message}'. 10 seconds e auto-send hobe!"
+            user_name = RavenCore.USER_NAME
+            name_text = f"{contact_name}" if contact_name else "WhatsApp"
+            
+            if language_mode == "english":
+                return f"Okay, {user_name}! Sending message to {name_text}: '{message}'. Will auto-send in 10 seconds!"
+            else:
+                return f"ঠিক আছে, {user_name}! {name_text} কে message পাঠাচ্ছি: '{message}'. ১০ seconds এ auto-send হবে!"
             
         except Exception as e:
             print(f"[Terminal] WhatsApp error: {e}")
-            return f"WhatsApp open korte problem hoyeche, {RavenCore.USER_NAME}."
+            user_name = RavenCore.USER_NAME
+            if language_mode == "english":
+                return f"Couldn't open WhatsApp, {user_name}."
+            else:
+                return f"WhatsApp open করতে problem হয়েছে, {user_name}."
     
-    def execute_search_command(self, query: str) -> str:
+    def execute_search_command(self, query: str, language_mode: str = "banglish") -> str:
         """UPGRADE: Enhanced Google search command"""
         # Extract search term
         search_keywords = ["search", "search for", "google", "look up", "khoj", "khuje dao"]
@@ -560,14 +569,26 @@ class CommandsHandler:
                 url = f"https://www.google.com/search?q={search_term.replace(' ', '+')}"
                 webbrowser.open(url)
                 print(f"[Terminal] Searching for: {search_term}")
-                return f"Thik ache, {RavenCore.USER_NAME}! Google e khujchi '{search_term}'..."
+                user_name = RavenCore.USER_NAME
+                
+                if language_mode == "english":
+                    return f"Okay, {user_name}! Searching Google for '{search_term}'..."
+                else:
+                    return f"ঠিক আছে, {user_name}! Google এ খুঁজছি '{search_term}'..."
             except Exception as e:
                 print(f"[Terminal] Search error: {e}")
-                return f"Browser open korte parchi na, {RavenCore.USER_NAME}."
+                user_name = RavenCore.USER_NAME
+                if language_mode == "english":
+                    return f"Couldn't open browser, {user_name}."
+                else:
+                    return f"Browser open করতে পারছি না, {user_name}."
         
-        return "Ki search korbo? Ektu clearly bolo."
+        if language_mode == "english":
+            return "What should I search for? Please be more specific."
+        else:
+            return "কি search করবো? একটু clearly বলো।"
     
-    def open_application(self, command: str) -> str:
+    def open_application(self, command: str, language_mode: str = "banglish") -> str:
         """Open application using Windows start menu"""
         app_name = ""
         
@@ -593,14 +614,24 @@ class CommandsHandler:
                 time.sleep(0.3)
                 # Press Enter
                 pyautogui.press('enter')
-                return f"{app_name} khulchi, ek second..."
+                
+                if language_mode == "english":
+                    return f"Opening {app_name}, just a second..."
+                else:
+                    return f"{app_name} খুলছি, এক second..."
             except Exception as e:
                 print(f"[Terminal] Error opening {app_name}: {e}")
-                return f"{app_name} open korte problem hoyeche."
+                if language_mode == "english":
+                    return f"Couldn't open {app_name}."
+                else:
+                    return f"{app_name} open করতে problem হয়েছে।"
         
-        return "Kon application ta khulbo? Clearly bolo."
+        if language_mode == "english":
+            return "Which application should I open? Please specify."
+        else:
+            return "কোন application টা খুলবো? Clearly বলো।"
     
-    def type_text(self, command: str) -> str:
+    def type_text(self, command: str, language_mode: str = "banglish") -> str:
         """Type text at current cursor position"""
         # Extract text to type
         text = ""
@@ -614,20 +645,39 @@ class CommandsHandler:
                 time.sleep(1)  # Give user time to click where they want text
                 pyautogui.write(text, interval=0.05)
                 print(f"[Terminal] Typed: {text}")
-                return f"Lekha hoyeche, {RavenCore.USER_NAME}: {text}"
+                user_name = RavenCore.USER_NAME
+                
+                if language_mode == "english":
+                    return f"Typed it, {user_name}: {text}"
+                else:
+                    return f"লেখা হয়েছে, {user_name}: {text}"
             except Exception as e:
                 print(f"[Terminal] Type error: {e}")
-                return f"Type korte parini, {RavenCore.USER_NAME}."
+                user_name = RavenCore.USER_NAME
+                if language_mode == "english":
+                    return f"Couldn't type that, {user_name}."
+                else:
+                    return f"Type করতে পারিনি, {user_name}."
         
-        return "Ki type korbo? Bolo to."
+        if language_mode == "english":
+            return "What should I type? Please tell me."
+        else:
+            return "কি type করবো? বলো তো।"
     
-    def minimize_all(self) -> str:
+    def minimize_all(self, language_mode: str = "banglish") -> str:
         """Minimize all windows and show desktop"""
         try:
             # Windows key + D to show desktop
             pyautogui.hotkey('win', 'd')
             print("[Terminal] Minimized all windows")
-            return "Shob window minimize kore dilam!"
+            
+            if language_mode == "english":
+                return "Minimized all windows!"
+            else:
+                return "সব window minimize করে দিলাম!"
         except Exception as e:
             print(f"[Terminal] Minimize error: {e}")
-            return "Minimize korte problem hoyeche."
+            if language_mode == "english":
+                return "Couldn't minimize windows."
+            else:
+                return "Minimize করতে problem হয়েছে।"
