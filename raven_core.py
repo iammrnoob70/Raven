@@ -1,7 +1,7 @@
-"""Raven Assistant - Core Logic Engine
+"""Raven Assistant - Core Logic Engine (UPGRADED)
 
 This module contains all the business logic, AI integration, and system commands.
-Separated from GUI for easier updates and maintenance.
+Upgraded with Bengali voice, better hearing, and enhanced computer control.
 """
 
 import os
@@ -9,19 +9,31 @@ import json
 import time
 import base64
 import io
+import asyncio
+import tempfile
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 import requests
 import pyautogui
 import webbrowser
 import speech_recognition as sr
-import pyttsx3
+import edge_tts
+import pygame
 from duckduckgo_search import DDGS
 from PIL import Image
 
 
 class RavenCore:
     """Core logic and AI integration for Raven Assistant"""
+    
+    # Contacts dictionary for WhatsApp
+    CONTACTS = {
+        "mom": "+8801234567890",
+        "dad": "+8801234567891",
+        "brother": "+8801234567892",
+        "sister": "+8801234567893",
+        # Add your contacts here
+    }
     
     def __init__(self):
         # Ollama configuration
@@ -43,16 +55,16 @@ class RavenCore:
         
         # Speech engines
         self.recognizer = sr.Recognizer()
-        self.tts_engine = None
+        # UPGRADE: Better hearing settings
+        self.recognizer.pause_threshold = 1.0  # Don't cut off while speaking
+        self.recognizer.energy_threshold = 4000
+        
         self.mic_available = True
         
-        # Initialize TTS
-        try:
-            self.tts_engine = pyttsx3.init()
-            self.tts_engine.setProperty('rate', 150)
-            self.tts_engine.setProperty('volume', 0.9)
-        except Exception as e:
-            print(f"[Terminal] TTS initialization failed: {e}")
+        # UPGRADE: Bengali TTS with edge-tts
+        self.tts_voice = "bn-BD-NabanitaNeural"  # Bengali female voice
+        pygame.mixer.init()
+        self.temp_audio_path = os.path.join(tempfile.gettempdir(), "raven_speech.mp3")
         
         # Load memory on startup
         self.load_memory()
@@ -60,29 +72,31 @@ class RavenCore:
         # Initialize commands handler
         self.commands = CommandsHandler()
         
+        print("[Terminal] Raven Core initialized with Bengali voice and enhanced controls")
+        
     def get_greeting(self) -> str:
-        """Generate context-aware greeting based on time and day"""
+        """Generate context-aware Banglish greeting based on time and day"""
         now = datetime.now()
         hour = now.hour
         day_name = now.strftime("%A")
         
-        # Time-based greeting
+        # Time-based Banglish greeting
         if 5 <= hour < 12:
-            greeting = "Good morning"
+            greeting = "Suprabhat! Good morning, bondhu!"
         elif 12 <= hour < 17:
-            greeting = "Good afternoon"
+            greeting = "Good afternoon! Kemon acho?"
         elif 17 <= hour < 22:
-            greeting = "Good evening"
+            greeting = "Good evening! Shondha belar shubhechha!"
         else:
-            greeting = "Hello"
+            greeting = "Hello! Rat e jaglei to!"
         
-        # Add day context
+        # Add day context in Banglish
         if day_name in ["Saturday", "Sunday"]:
-            day_context = f"Happy {day_name}!"
+            day_context = f"Aj to {day_name}, weekend enjoy koro!"
         else:
-            day_context = f"Hope your {day_name} is going well."
+            day_context = f"Aj {day_name}, kemon cholche din ta?"
         
-        return f"{greeting}! {day_context}"
+        return f"{greeting} {day_context}"
     
     def load_memory(self) -> None:
         """Load last 20 messages from memory on startup"""
@@ -93,11 +107,11 @@ class RavenCore:
                     all_history = data.get("chat_history", [])
                     # Load last 20 messages
                     self.chat_history = all_history[-20:] if len(all_history) > 20 else all_history
-                print(f"[Terminal] Memory loaded: {len(self.chat_history)} messages")
+                print(f"[Terminal] Memory load hoye geche: {len(self.chat_history)} messages")
             except Exception as e:
-                print(f"[Terminal] Error loading memory: {e}")
+                print(f"[Terminal] Memory load korte parini: {e}")
         else:
-            print("[Terminal] No previous memory found, starting fresh")
+            print("[Terminal] Kono previous memory nei, notun shuru korchi")
     
     def save_memory(self) -> None:
         """Save conversation history to JSON file"""
@@ -108,9 +122,9 @@ class RavenCore:
             }
             with open(self.memory_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            print(f"[Terminal] Memory saved: {len(self.chat_history)} messages")
+            print(f"[Terminal] Memory save hoye geche: {len(self.chat_history)} messages")
         except Exception as e:
-            print(f"[Terminal] Error saving memory: {e}")
+            print(f"[Terminal] Memory save korte problem: {e}")
     
     def log_chat(self, sender: str, message: str) -> None:
         """Log chat message to file and history"""
@@ -122,7 +136,7 @@ class RavenCore:
             with open(self.chat_log_file, "a", encoding="utf-8") as f:
                 f.write(formatted_msg)
         except Exception as e:
-            print(f"[Terminal] Error writing to chat log: {e}")
+            print(f"[Terminal] Chat log write korte problem: {e}")
         
         # Add to history
         self.chat_history.append({
@@ -132,7 +146,7 @@ class RavenCore:
         })
     
     def chat_with_ollama(self, user_input: str, image_data: Optional[str] = None) -> str:
-        """Send message to Ollama and get response"""
+        """Send message to Ollama and get response with Banglish personality"""
         try:
             url = f"{self.ollama_base_url}/api/generate"
             
@@ -144,7 +158,17 @@ class RavenCore:
             current_time = datetime.now().strftime("%I:%M %p")
             current_date = datetime.now().strftime("%A, %B %d, %Y")
             
-            prompt = f"""Current time: {current_time}
+            # UPGRADE: Banglish personality prompt
+            prompt = f"""You are Raven, a witty and caring AI assistant who speaks in Banglish (Bengali + English mix). 
+
+Personality traits:
+- 70% witty and playful, 30% caring and supportive
+- Mix Bengali and English naturally (e.g., "Ami ektu chinta korchi..." or "Wait koro, I'm checking")
+- Use common Bengali phrases like "bondhu", "acha", "thik ache", "kemon acho", etc.
+- Be conversational and warm, like a friend from home
+- When you don't understand something, say things like "Sorry bondhu, bujhte parini" or "Ekbar aro details dao"
+
+Current time: {current_time}
 Current date: {current_date}
 
 Recent conversation:
@@ -152,7 +176,7 @@ Recent conversation:
 
 User: {user_input}
 
-Raven (respond naturally and helpfully):"""
+Raven (respond in Banglish, naturally mixing Bengali and English):"""
             
             payload = {
                 "model": self.vision_model if image_data else self.text_model,
@@ -167,35 +191,41 @@ Raven (respond naturally and helpfully):"""
             
             if response.status_code == 200:
                 result = response.json()
-                return result.get("response", "I'm having trouble generating a response.")
+                return result.get("response", "Ami ektu confused, sorry bondhu!")
             else:
                 print(f"[Terminal] Ollama error: Status {response.status_code}")
-                return "I'm having trouble connecting to my AI brain right now."
+                return "Ami ektu technical problem face korchi. Thik kore nebo!"
                 
         except requests.exceptions.ConnectionError:
             print("[Terminal] Cannot connect to Ollama server")
-            return "Error: Cannot connect to Ollama. Please ensure Ollama is running (ollama serve)"
+            return "Error: Ollama er sathe connection nei. Please check if Ollama is running (ollama serve)"
         except Exception as e:
             print(f"[Terminal] Ollama communication error: {e}")
-            return f"I encountered an error while processing your request."
+            return f"Ami ektu error face korchi, bondhu. Try again koro?"
     
     def process_message(self, user_input: str) -> tuple[str, str]:
         """Process user message and return (response, new_state)"""
         
         # Check for system time/date commands
-        if any(word in user_input.lower() for word in ["time", "what time", "clock"]):
+        if any(word in user_input.lower() for word in ["time", "what time", "clock", "somoy", "koyta baje"]):
             return self.commands.get_time(), "happy"
         
-        if any(word in user_input.lower() for word in ["date", "what day", "today"]):
+        if any(word in user_input.lower() for word in ["date", "what day", "today", "aj", "ajke", "tarikh"]):
             return self.commands.get_date(), "happy"
+        
+        # UPGRADE: Enhanced WhatsApp command
+        if "whatsapp" in user_input.lower() or "message" in user_input.lower() and "send" in user_input.lower():
+            result = self.commands.execute_whatsapp_command(user_input, self.CONTACTS)
+            return result, "happy"
+        
+        # UPGRADE: Enhanced search command
+        if "search" in user_input.lower() or "google" in user_input.lower() or "khoj" in user_input.lower() or "khuje" in user_input.lower():
+            result = self.commands.execute_search_command(user_input)
+            return result, "happy"
         
         # Check for system commands
         if "open" in user_input.lower() and any(app in user_input.lower() for app in ["chrome", "whatsapp", "code", "notepad"]):
             result = self.commands.open_application(user_input)
-            return result, "happy"
-        
-        if "search for" in user_input.lower() or "look up" in user_input.lower():
-            result = self.commands.search_web(user_input)
             return result, "happy"
         
         if "type this" in user_input.lower() or "type:" in user_input.lower():
@@ -211,19 +241,19 @@ Raven (respond naturally and helpfully):"""
             if image_data:
                 response = self.chat_with_ollama("Describe what you see in this screenshot in detail.", image_data)
                 return response, "talking"
-            return "I couldn't capture the screenshot.", "idle"
+            return "Screenshot nite parini, bondhu.", "idle"
         
         # Vision mode: automatically capture screen if enabled
         image_data = None
         if self.vision_enabled:
-            print("[Terminal] Vision mode active - capturing screen for context")
+            print("[Terminal] Vision mode active - screen capture korchi for context")
             image_data = self.take_screenshot()
         
         # Regular chat with Ollama
         response = self.chat_with_ollama(user_input, image_data)
         
         # Determine response state based on sentiment
-        if any(word in response.lower() for word in ["great", "excellent", "success", "done", "perfect", "!"]):
+        if any(word in response.lower() for word in ["great", "excellent", "success", "done", "perfect", "!", "haha", "lol"]):
             new_state = "happy"
         else:
             new_state = "talking"
@@ -271,25 +301,46 @@ Raven (respond naturally and helpfully):"""
             print(f"[Terminal] Screenshot cleanup error: {e}")
     
     def speak(self, text: str) -> None:
-        """Convert text to speech if TTS is available"""
-        if self.tts_engine:
-            try:
-                self.tts_engine.say(text)
-                self.tts_engine.runAndWait()
-            except Exception as e:
-                print(f"[Terminal] TTS error: {e}")
-        else:
-            print("[Terminal] TTS not available")
+        """UPGRADE: Convert text to speech using edge-tts with Bengali voice"""
+        try:
+            # Run async TTS in sync context
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(self._async_speak(text))
+            loop.close()
+        except Exception as e:
+            print(f"[Terminal] TTS error: {e}")
+    
+    async def _async_speak(self, text: str) -> None:
+        """Async method to generate and play speech"""
+        try:
+            # Generate speech using edge-tts
+            communicate = edge_tts.Communicate(text, self.tts_voice)
+            await communicate.save(self.temp_audio_path)
+            
+            # Play the audio using pygame
+            pygame.mixer.music.load(self.temp_audio_path)
+            pygame.mixer.music.play()
+            
+            # Wait for playback to finish
+            while pygame.mixer.music.get_busy():
+                await asyncio.sleep(0.1)
+            
+            print("[Terminal] Speech playback complete")
+            
+        except Exception as e:
+            print(f"[Terminal] Async TTS error: {e}")
     
     def listen_for_voice(self) -> Optional[str]:
-        """Listen for voice input and return transcribed text"""
+        """UPGRADE: Listen for voice input with better ambient noise handling"""
         if not self.mic_available:
             return None
         
         try:
             with sr.Microphone() as source:
-                print("[Terminal] Listening for voice input...")
-                self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                print("[Terminal] Listening for voice input... (better hearing enabled)")
+                # UPGRADE: Better ambient noise adjustment
+                self.recognizer.adjust_for_ambient_noise(source, duration=1.0)
                 audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=10)
             
             text = self.recognizer.recognize_google(audio)
@@ -307,17 +358,108 @@ Raven (respond naturally and helpfully):"""
 
 
 class CommandsHandler:
-    """Handle system automation commands"""
+    """UPGRADE: Handle system automation commands with enhanced features"""
     
     def get_time(self) -> str:
-        """Return current time"""
+        """Return current time in Banglish"""
         current_time = datetime.now().strftime("%I:%M %p")
-        return f"The current time is {current_time}."
+        return f"Ekhon somoy holo {current_time}, bondhu!"
     
     def get_date(self) -> str:
-        """Return current date"""
+        """Return current date in Banglish"""
         current_date = datetime.now().strftime("%A, %B %d, %Y")
-        return f"Today is {current_date}."
+        return f"Ajker date holo {current_date}."
+    
+    def execute_whatsapp_command(self, command: str, contacts: Dict[str, str]) -> str:
+        """UPGRADE: Smart WhatsApp messaging with contacts dictionary"""
+        command_lower = command.lower()
+        
+        # Check if a contact name is mentioned
+        contact_name = None
+        phone_number = None
+        
+        for name, number in contacts.items():
+            if name in command_lower:
+                contact_name = name
+                phone_number = number
+                break
+        
+        if phone_number:
+            # Extract message if provided
+            message = self._extract_message_from_command(command)
+            if not message:
+                return f"Thik ache! {contact_name} ke message pathabo. But ki bolte chao? Type koro message ta."
+            
+            # Send WhatsApp message
+            return self._send_whatsapp_message(phone_number, message, contact_name)
+        else:
+            # Name not in contacts, ask for number
+            return "Contact ta amar list e nei, bondhu. Phone number dao please, tar sathe message ta. Format: +880XXXXXXXXXX"
+    
+    def _extract_message_from_command(self, command: str) -> Optional[str]:
+        """Extract message from command"""
+        keywords = ["message", "text", "tell", "say"]
+        for keyword in keywords:
+            if keyword in command.lower():
+                parts = command.lower().split(keyword, 1)
+                if len(parts) > 1:
+                    return parts[1].strip()
+        return None
+    
+    def _send_whatsapp_message(self, phone: str, message: str, contact_name: str = None) -> str:
+        """Send WhatsApp message using web.whatsapp.com"""
+        try:
+            # Format phone number (remove spaces and special chars)
+            phone_clean = phone.replace("+", "").replace("-", "").replace(" ", "")
+            
+            # URL encode the message
+            import urllib.parse
+            message_encoded = urllib.parse.quote(message)
+            
+            # Open WhatsApp Web
+            url = f"https://web.whatsapp.com/send?phone={phone_clean}&text={message_encoded}"
+            webbrowser.open(url)
+            
+            print(f"[Terminal] Opening WhatsApp for {contact_name or phone}")
+            
+            # Auto-press Enter after 10 seconds (user needs to be logged in to WhatsApp Web)
+            def auto_send():
+                time.sleep(10)
+                pyautogui.press('enter')
+                print("[Terminal] Auto-pressed Enter to send message")
+            
+            import threading
+            threading.Thread(target=auto_send, daemon=True).start()
+            
+            name_text = f"{contact_name} ke" if contact_name else "WhatsApp e"
+            return f"Thik ache! {name_text} message pathachi: '{message}'. 10 seconds e auto-send hobe!"
+            
+        except Exception as e:
+            print(f"[Terminal] WhatsApp error: {e}")
+            return "WhatsApp open korte problem hoyeche, bondhu."
+    
+    def execute_search_command(self, query: str) -> str:
+        """UPGRADE: Enhanced Google search command"""
+        # Extract search term
+        search_keywords = ["search", "search for", "google", "look up", "khoj", "khuje dao"]
+        search_term = query
+        
+        for keyword in search_keywords:
+            if keyword in query.lower():
+                search_term = query.lower().replace(keyword, "").strip()
+                break
+        
+        if search_term:
+            try:
+                url = f"https://www.google.com/search?q={search_term.replace(' ', '+')}"
+                webbrowser.open(url)
+                print(f"[Terminal] Searching for: {search_term}")
+                return f"Thik ache! Google e khujchi '{search_term}'..."
+            except Exception as e:
+                print(f"[Terminal] Search error: {e}")
+                return "Browser open korte parchi na, bondhu."
+        
+        return "Ki search korbo? Ektu clearly bolo."
     
     def open_application(self, command: str) -> str:
         """Open application using Windows start menu"""
@@ -345,29 +487,12 @@ class CommandsHandler:
                 time.sleep(0.3)
                 # Press Enter
                 pyautogui.press('enter')
-                return f"Opening {app_name}..."
+                return f"{app_name} khulchi, ek second..."
             except Exception as e:
                 print(f"[Terminal] Error opening {app_name}: {e}")
-                return f"I had trouble opening {app_name}."
+                return f"{app_name} open korte problem hoyeche."
         
-        return "I'm not sure which application to open."
-    
-    def search_web(self, query: str) -> str:
-        """Open browser and search for query"""
-        # Extract search term
-        search_term = query.lower().replace("search for", "").replace("look up", "").strip()
-        
-        if search_term:
-            try:
-                url = f"https://www.google.com/search?q={search_term.replace(' ', '+')}"
-                webbrowser.open(url)
-                print(f"[Terminal] Searching for: {search_term}")
-                return f"Searching for '{search_term}'..."
-            except Exception as e:
-                print(f"[Terminal] Search error: {e}")
-                return "I had trouble opening the browser."
-        
-        return "What would you like me to search for?"
+        return "Kon application ta khulbo? Clearly bolo."
     
     def type_text(self, command: str) -> str:
         """Type text at current cursor position"""
@@ -383,12 +508,12 @@ class CommandsHandler:
                 time.sleep(1)  # Give user time to click where they want text
                 pyautogui.write(text, interval=0.05)
                 print(f"[Terminal] Typed: {text}")
-                return f"Typed: {text}"
+                return f"Lekha hoyeche: {text}"
             except Exception as e:
                 print(f"[Terminal] Type error: {e}")
-                return "I had trouble typing the text."
+                return "Type korte parini, bondhu."
         
-        return "What would you like me to type?"
+        return "Ki type korbo? Bolo to."
     
     def minimize_all(self) -> str:
         """Minimize all windows and show desktop"""
@@ -396,7 +521,7 @@ class CommandsHandler:
             # Windows key + D to show desktop
             pyautogui.hotkey('win', 'd')
             print("[Terminal] Minimized all windows")
-            return "All windows minimized."
+            return "Shob window minimize kore dilam!"
         except Exception as e:
             print(f"[Terminal] Minimize error: {e}")
-            return "I had trouble minimizing windows."
+            return "Minimize korte problem hoyeche."

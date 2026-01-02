@@ -1,7 +1,7 @@
-"""Raven Assistant - GUI Interface
+"""Raven Assistant - GUI Interface (UPGRADED)
 
 This module handles all the visual interface, state animations, and user interactions.
-Separated from core logic for easier customization and updates.
+Upgraded with modern floating overlay, draggable window, and enhanced glow effects.
 """
 
 import customtkinter as ctk
@@ -14,16 +14,16 @@ from raven_core import RavenCore
 
 
 class RavenGUI:
-    """Modern GUI for Raven Assistant with state-based visual feedback"""
+    """Modern Floating Overlay GUI for Raven Assistant with state-based visual feedback"""
     
-    # Color scheme
+    # UPGRADE: Enhanced cyberpunk color scheme
     COLORS = {
-        "bg_dark": "#0d1117",           # Deep charcoal background
-        "bg_medium": "#161b22",         # Medium dark
-        "bg_light": "#1f2937",          # Lighter panels
-        "idle_glow": "#4b5563",         # Soft grey-blue for idle
-        "listening_glow": "#50fa7b",    # Neon emerald for listening
-        "thinking_glow": "#bd93f9",     # Deep electric violet for thinking
+        "bg_dark": "#121212",           # Deep charcoal background (semi-transparent)
+        "bg_medium": "#1a1a1a",         # Medium dark
+        "bg_light": "#252525",          # Lighter panels
+        "idle_glow": "#60a5fa",         # Soft blue for idle
+        "listening_glow": "#50fa7b",    # Emerald green for listening
+        "thinking_glow": "#bd93f9",     # Electric violet for thinking
         "talking_glow": "#8be9fd",      # Cyan for talking
         "happy_glow": "#f1fa8c",        # Yellow for happy
         "text_primary": "#e0e0e0",      # Light text
@@ -39,11 +39,12 @@ class RavenGUI:
         # Initialize main window
         self.root = ctk.CTk()
         self.root.title("Raven Assistant")
-        self.root.geometry("850x950")
+        self.root.geometry("800x920")
         
-        # Window styling
-        self.root.attributes('-alpha', 0.96)
-        self.root.attributes('-topmost', True)
+        # UPGRADE: Floating window setup
+        self.root.overrideredirect(True)  # Remove title bar
+        self.root.attributes('-alpha', 0.9)  # Semi-transparent
+        self.root.attributes('-topmost', True)  # Always on top
         
         # Set theme
         ctk.set_appearance_mode("dark")
@@ -52,6 +53,9 @@ class RavenGUI:
         # State tracking
         self.current_state = "idle"
         self.is_processing = False
+        
+        # UPGRADE: Draggable window variables
+        self.drag_data = {"x": 0, "y": 0}
         
         # Assets path
         self.assets_path = os.path.join(os.path.dirname(__file__), "raven_assets")
@@ -73,47 +77,73 @@ class RavenGUI:
         self.voice_thread = None
     
     def build_gui(self):
-        """Build the complete GUI interface"""
-        # Main container with dark background
+        """Build the complete modern GUI interface"""
+        # Main container with rounded corners effect
         self.main_frame = ctk.CTkFrame(
             self.root, 
-            fg_color=self.COLORS["bg_dark"]
+            fg_color=self.COLORS["bg_dark"],
+            corner_radius=20,
+            border_width=2,
+            border_color=self.COLORS["accent"]
         )
-        self.main_frame.pack(fill="both", expand=True, padx=15, pady=15)
+        self.main_frame.pack(fill="both", expand=True, padx=0, pady=0)
         
-        # Title bar
+        # UPGRADE: Title bar with drag functionality and close button
         title_frame = ctk.CTkFrame(
             self.main_frame,
-            fg_color="transparent"
+            fg_color="transparent",
+            height=50
         )
-        title_frame.pack(fill="x", pady=(0, 10))
+        title_frame.pack(fill="x", pady=(10, 10), padx=15)
+        title_frame.pack_propagate(False)
+        
+        # Make title bar draggable
+        title_frame.bind("<Button-1>", self.start_drag)
+        title_frame.bind("<B1-Motion>", self.on_drag)
         
         title_label = ctk.CTkLabel(
             title_frame,
             text="RAVEN ASSISTANT",
-            font=("Segoe UI", 20, "bold"),
+            font=("Consolas", 18, "bold"),
             text_color=self.COLORS["accent"]
         )
         title_label.pack(side="left")
+        title_label.bind("<Button-1>", self.start_drag)
+        title_label.bind("<B1-Motion>", self.on_drag)
+        
+        # Close button
+        close_btn = ctk.CTkButton(
+            title_frame,
+            text="✕",
+            command=self.on_closing,
+            width=30,
+            height=30,
+            fg_color="#dc2626",
+            hover_color="#ef4444",
+            font=("Consolas", 16, "bold"),
+            corner_radius=15
+        )
+        close_btn.pack(side="right")
         
         # Status indicator
         self.status_label = ctk.CTkLabel(
             title_frame,
             text="● Idle",
-            font=("Segoe UI", 12),
+            font=("Consolas", 11),
             text_color=self.COLORS["idle_glow"]
         )
-        self.status_label.pack(side="right")
+        self.status_label.pack(side="right", padx=15)
         
-        # Avatar frame with state-based glow
+        # UPGRADE: Avatar frame with enhanced state-based glow
         self.avatar_container = ctk.CTkFrame(
             self.main_frame,
-            height=420,
+            height=360,
             fg_color=self.COLORS["bg_medium"],
-            border_width=3,
-            border_color=self.COLORS["idle_glow"]
+            border_width=4,
+            border_color=self.COLORS["idle_glow"],
+            corner_radius=15
         )
-        self.avatar_container.pack(fill="x", pady=(0, 15))
+        self.avatar_container.pack(fill="x", pady=(0, 15), padx=15)
         self.avatar_container.pack_propagate(False)
         
         # Avatar label for displaying state images
@@ -124,35 +154,47 @@ class RavenGUI:
         )
         self.avatar_label.pack(expand=True, padx=10, pady=10)
         
-        # Control buttons
+        # UPGRADE: Modern icon-based control buttons
         self.build_controls()
         
-        # Chat display
+        # UPGRADE: Chat display with bubble style
         self.build_chat_display()
         
-        # Input area
+        # UPGRADE: Modern input area
         self.build_input_area()
     
+    def start_drag(self, event):
+        """UPGRADE: Start dragging the window"""
+        self.drag_data["x"] = event.x
+        self.drag_data["y"] = event.y
+    
+    def on_drag(self, event):
+        """UPGRADE: Handle window dragging"""
+        x = self.root.winfo_x() + event.x - self.drag_data["x"]
+        y = self.root.winfo_y() + event.y - self.drag_data["y"]
+        self.root.geometry(f"+{x}+{y}")
+    
     def build_controls(self):
-        """Build control buttons panel"""
+        """UPGRADE: Build modern control buttons panel"""
         control_frame = ctk.CTkFrame(
             self.main_frame,
             fg_color="transparent"
         )
-        control_frame.pack(fill="x", pady=(0, 15))
+        control_frame.pack(fill="x", pady=(0, 15), padx=15)
         
         # Voice mode toggle
         self.voice_btn = ctk.CTkButton(
             control_frame,
             text="🎤 Voice: OFF",
             command=self.toggle_voice_mode,
-            width=140,
-            height=45,
+            width=130,
+            height=40,
             fg_color=self.COLORS["bg_medium"],
             hover_color=self.COLORS["bg_light"],
             border_width=2,
             border_color=self.COLORS["text_secondary"],
-            font=("Segoe UI", 12)
+            font=("Consolas", 11, "bold"),
+            corner_radius=10
         )
         self.voice_btn.pack(side="left", padx=5)
         
@@ -161,13 +203,14 @@ class RavenGUI:
             control_frame,
             text="👁 Vision: OFF",
             command=self.toggle_vision_mode,
-            width=140,
-            height=45,
+            width=130,
+            height=40,
             fg_color=self.COLORS["bg_medium"],
             hover_color=self.COLORS["bg_light"],
             border_width=2,
             border_color=self.COLORS["text_secondary"],
-            font=("Segoe UI", 12)
+            font=("Consolas", 11, "bold"),
+            corner_radius=10
         )
         self.vision_btn.pack(side="left", padx=5)
         
@@ -176,11 +219,12 @@ class RavenGUI:
             control_frame,
             text="📸 Capture",
             command=self.manual_screenshot,
-            width=120,
-            height=45,
+            width=110,
+            height=40,
             fg_color=self.COLORS["accent"],
             hover_color=self.COLORS["accent_hover"],
-            font=("Segoe UI", 12, "bold")
+            font=("Consolas", 11, "bold"),
+            corner_radius=10
         )
         screenshot_btn.pack(side="left", padx=5)
         
@@ -189,50 +233,56 @@ class RavenGUI:
             control_frame,
             text="🗑 Clear",
             command=self.clear_chat,
-            width=100,
-            height=45,
+            width=90,
+            height=40,
             fg_color=self.COLORS["bg_light"],
             hover_color="#374151",
-            font=("Segoe UI", 12)
+            font=("Consolas", 11, "bold"),
+            corner_radius=10
         )
         clear_btn.pack(side="right", padx=5)
     
     def build_chat_display(self):
-        """Build chat display area"""
+        """UPGRADE: Build chat display area with modern styling"""
         chat_frame = ctk.CTkFrame(
             self.main_frame,
-            fg_color=self.COLORS["bg_medium"]
+            fg_color=self.COLORS["bg_medium"],
+            corner_radius=15,
+            border_width=1,
+            border_color=self.COLORS["bg_light"]
         )
-        chat_frame.pack(fill="both", expand=True, pady=(0, 15))
+        chat_frame.pack(fill="both", expand=True, pady=(0, 15), padx=15)
         
-        # Chat textbox
+        # Chat textbox with custom styling
         self.chat_display = ctk.CTkTextbox(
             chat_frame,
             fg_color=self.COLORS["bg_medium"],
             text_color=self.COLORS["text_primary"],
-            font=("Segoe UI", 12),
-            wrap="word"
+            font=("Consolas", 11),
+            wrap="word",
+            corner_radius=10
         )
-        self.chat_display.pack(fill="both", expand=True, padx=3, pady=3)
+        self.chat_display.pack(fill="both", expand=True, padx=5, pady=5)
         self.chat_display.configure(state="disabled")
     
     def build_input_area(self):
-        """Build input area with send button"""
+        """UPGRADE: Build modern input area with sleek design"""
         input_frame = ctk.CTkFrame(
             self.main_frame,
             fg_color="transparent"
         )
-        input_frame.pack(fill="x")
+        input_frame.pack(fill="x", padx=15, pady=(0, 15))
         
-        # Text input
+        # Text input with modern styling
         self.input_entry = ctk.CTkEntry(
             input_frame,
-            placeholder_text="Ask Raven anything... (Press Enter to send)",
-            height=55,
-            font=("Segoe UI", 13),
+            placeholder_text="Ask Raven anything... (Press Enter)",
+            height=50,
+            font=("Consolas", 12),
             fg_color=self.COLORS["bg_medium"],
             border_color=self.COLORS["accent"],
-            border_width=2
+            border_width=2,
+            corner_radius=12
         )
         self.input_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
         self.input_entry.bind("<Return>", lambda e: self.send_message())
@@ -242,25 +292,26 @@ class RavenGUI:
             input_frame,
             text="Send ➤",
             command=self.send_message,
-            width=110,
-            height=55,
+            width=100,
+            height=50,
             fg_color=self.COLORS["accent"],
             hover_color=self.COLORS["accent_hover"],
-            font=("Segoe UI", 14, "bold")
+            font=("Consolas", 13, "bold"),
+            corner_radius=12
         )
         self.send_btn.pack(side="right")
     
     def load_state_images(self):
         """Load state images from assets folder"""
         self.state_images = {}
-        states = ["idle", "listening", "thinking", "talking", "happy"]
+        states = ["idle", "listening", "thinking", "talking", "happy", "blinking"]
         
         for state in states:
             image_path = os.path.join(self.assets_path, f"raven_{state}.png")
             if os.path.exists(image_path):
                 try:
                     img = Image.open(image_path)
-                    img.thumbnail((400, 400), Image.Resampling.LANCZOS)
+                    img.thumbnail((340, 340), Image.Resampling.LANCZOS)
                     self.state_images[state] = ImageTk.PhotoImage(img)
                     print(f"[Terminal] Loaded image: raven_{state}.png")
                 except Exception as e:
@@ -271,12 +322,12 @@ class RavenGUI:
             print("[Terminal] No images found, using emoji placeholders")
             self.avatar_label.configure(
                 text="RAVEN\n\n(Place PNG images in raven_assets folder)",
-                font=("Segoe UI", 18, "bold"),
+                font=("Consolas", 16, "bold"),
                 text_color=self.COLORS["text_secondary"]
             )
     
     def update_state(self, state: str):
-        """Update visual state with smooth transitions"""
+        """UPGRADE: Update visual state with enhanced glow transitions"""
         self.current_state = state
         
         # Update avatar image
@@ -293,11 +344,11 @@ class RavenGUI:
             }
             self.avatar_label.configure(
                 text=emojis.get(state, "🤖"),
-                font=("Segoe UI", 100),
+                font=("Consolas", 80),
                 text_color=self.COLORS["text_primary"]
             )
         
-        # Update border glow based on state
+        # UPGRADE: Enhanced border glow based on state
         glow_colors = {
             "idle": self.COLORS["idle_glow"],
             "listening": self.COLORS["listening_glow"],
@@ -321,12 +372,20 @@ class RavenGUI:
         )
     
     def start_idle_animation(self):
-        """Subtle idle animation"""
+        """Subtle idle animation with occasional blink"""
         def animate():
+            blink_counter = 0
             while True:
                 if self.current_state == "idle" and not self.is_processing:
-                    # Optional: could cycle between idle and a subtle blink
-                    pass
+                    blink_counter += 1
+                    if blink_counter >= 5 and "blinking" in self.state_images:
+                        # Show blink frame
+                        self.avatar_label.configure(image=self.state_images["blinking"], text="")
+                        time.sleep(0.2)
+                        # Return to idle
+                        if "idle" in self.state_images:
+                            self.avatar_label.configure(image=self.state_images["idle"], text="")
+                        blink_counter = 0
                 time.sleep(3)
         
         thread = threading.Thread(target=animate, daemon=True)
@@ -340,12 +399,14 @@ class RavenGUI:
         # Color code by sender
         if sender == "You" or sender == "You (voice)":
             color = self.COLORS["listening_glow"]
+            prefix = "🧑"
         elif sender == "Raven":
             color = self.COLORS["talking_glow"]
+            prefix = "🦅"
         else:
             return  # Don't show system messages in chat
         
-        formatted_msg = f"[{timestamp}] {sender}:\n{message}\n\n"
+        formatted_msg = f"{prefix} [{timestamp}] {sender}:\n{message}\n\n"
         self.chat_display.insert("end", formatted_msg)
         self.chat_display.see("end")
         self.chat_display.configure(state="disabled")
@@ -435,7 +496,7 @@ class RavenGUI:
         status = "ON" if self.core.vision_enabled else "OFF"
         self.vision_btn.configure(text=f"👁 Vision: {status}")
         
-        mode_msg = "Vision mode enabled - I'll look at your screen with every message." if self.core.vision_enabled else "Vision mode disabled."
+        mode_msg = "Vision mode enabled - ami screen dekhbo every message e." if self.core.vision_enabled else "Vision mode disabled."
         print(f"[Terminal] {mode_msg}")
     
     def manual_screenshot(self):
