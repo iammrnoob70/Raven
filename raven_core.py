@@ -196,7 +196,7 @@ Raven (respond in Banglish, naturally mixing Bengali and English, address user a
             
             if response.status_code == 200:
                 result = response.json()
-                return result.get("response", "Ami ektu confused, sorry bondhu!")
+                return result.get("response", f"Ami ektu confused, sorry {self.USER_NAME}!")
             else:
                 print(f"[Terminal] Ollama error: Status {response.status_code}")
                 return "Ami ektu technical problem face korchi. Thik kore nebo!"
