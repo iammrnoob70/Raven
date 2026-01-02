@@ -143,7 +143,7 @@ backend:
           - All existing features preserved (WhatsApp, search, etc.)
 
 frontend:
-  - task: "Modern GUI Upgrade (raven_gui.py)"
+  - task: "ELITE GUI (raven_gui.py)"
     implemented: true
     working: "NA"
     file: "raven_gui.py"
@@ -154,15 +154,33 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: |
-          Upgraded raven_gui.py with:
-          - Borderless floating window (overrideredirect)
-          - Semi-transparent background (0.9 opacity)
-          - Always on top functionality
-          - Draggable window support
-          - Enhanced glow effects for different states (Emerald Green, Electric Violet, Soft Blue)
-          - Modern control buttons with Consolas font
-          - Rounded corners and sleek design
-          - Chat bubble styling improvements
+          🦅 ELITE RAVEN GUI implemented:
+          
+          PILLAR 1: Elite Dark UI (Glassmorphism)
+          - Deep Charcoal background (#0a0a0a) with 0.85 opacity
+          - Neon Blue (#00f2ff) borders for modern look
+          - Pulsing glow animations (thread-based)
+          - 6 mood-based glow colors:
+            * Emerald Green (#50fa7b) - Listening
+            * Electric Violet (#bd93f9) - Thinking
+            * Deep Crimson (#dc143c) - Stressed/Angry (NEW!)
+            * Soft Blue, Cyan, Yellow for other states
+          
+          PILLAR 2: Bouncing Avatar Animation
+          - start_bounce_animation() - Vibrates avatar during talking/thinking
+          - Smooth 5-pixel bounce effect
+          - Automatic start/stop based on state
+          
+          PILLAR 3: Mood Indicator
+          - Live mood display in title bar
+          - Emoji-based mood visualization (😊😔😤😴)
+          - Neon blue highlight for active moods
+          
+          ENHANCED FEATURES:
+          - Always on top (topmost)
+          - Draggable window (title bar drag)
+          - All existing features preserved (voice, vision, screenshot)
+          - Modern Consolas font with emoji support
 
 metadata:
   created_by: "main_agent"
