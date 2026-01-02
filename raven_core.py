@@ -84,15 +84,15 @@ class RavenCore:
         hour = now.hour
         day_name = now.strftime("%A")
         
-        # Time-based Banglish greeting
+        # Time-based Banglish greeting with user's name
         if 5 <= hour < 12:
-            greeting = "Suprabhat! Good morning, bondhu!"
+            greeting = f"Suprabhat! Good morning, {self.USER_NAME}!"
         elif 12 <= hour < 17:
-            greeting = "Good afternoon! Kemon acho?"
+            greeting = f"Good afternoon, {self.USER_NAME}! Kemon acho?"
         elif 17 <= hour < 22:
-            greeting = "Good evening! Shondha belar shubhechha!"
+            greeting = f"Good evening, {self.USER_NAME}! Shondha belar shubhechha!"
         else:
-            greeting = "Hello! Rat e jaglei to!"
+            greeting = f"Hello {self.USER_NAME}! Rat e jaglei to!"
         
         # Add day context in Banglish
         if day_name in ["Saturday", "Sunday"]:
