@@ -110,7 +110,7 @@ user_problem_statement: |
   4. Enhanced System Integration - Always on top, draggable, Bengali voice, bouncing avatar animations
 
 backend:
-  - task: "Core Logic Upgrade (raven_core.py)"
+  - task: "ELITE Core Logic (raven_core.py)"
     implemented: true
     working: "NA"
     file: "raven_core.py"
@@ -121,14 +121,26 @@ backend:
       - working: "NA"
         agent: "main"
         comment: |
-          Upgraded raven_core.py with:
-          - Replaced pyttsx3 with edge-tts (Bengali voice 'bn-BD-NabanitaNeural')
-          - Added pygame for audio playback
-          - Enhanced speech recognition with 1.0s ambient noise adjustment and pause_threshold
-          - Smart WhatsApp command with contacts dictionary
-          - Enhanced search command
-          - Banglish personality in all responses
-          - All system commands updated with Banglish responses
+          🦅 ELITE RAVEN CORE implemented:
+          
+          PILLAR 1: Emotionally Human Logic
+          - detect_mood() - Detects stressed, sad, tired, happy from keywords
+          - mood_history tracking (last 5 moods with timestamps)
+          - Adaptive AI responses based on current mood
+          - Mood-aware system prompts for Ollama
+          - Bengali/English mood expressions
+          
+          PILLAR 2: Universal File Opener
+          - detect_and_open_file() - Automatic file path detection using regex
+          - open_file() - Supports PDFs, docs, images, code, videos, audio
+          - Smart application selection (VS Code for code files)
+          - Works with "Raven, open D:/file.pdf" or automatic detection
+          
+          ENHANCED FEATURES:
+          - Bengali TTS (edge-tts + bn-BD-NabanitaNeural)
+          - Mood persistence in memory.json
+          - Deep Crimson state for stressed users
+          - All existing features preserved (WhatsApp, search, etc.)
 
 frontend:
   - task: "Modern GUI Upgrade (raven_gui.py)"
