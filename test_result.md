@@ -190,8 +190,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Core Logic Upgrade (raven_core.py)"
-    - "Modern GUI Upgrade (raven_gui.py)"
+    - "ELITE Core Logic (raven_core.py)"
+    - "ELITE GUI (raven_gui.py)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
