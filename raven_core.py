@@ -234,34 +234,57 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
     def process_message(self, user_input: str) -> tuple[str, str]:
         """Process user message and return (response, new_state)"""
         
+        # Check for language switching commands
+        user_lower = user_input.lower().strip()
+        
+        # Switch to English mode
+        if user_lower == "english" or user_lower == "speak english" or user_lower == "switch to english":
+            self.language_mode = "english"
+            return f"Switching to English mode, {self.USER_NAME}. I will speak only in English now until you speak Bengali again.", "happy"
+        
+        # Detect Bengali language and switch to Banglish mode
+        # Check for Bengali script or common Bengali words
+        bengali_indicators = ['আমি', 'তুমি', 'কি', 'কেমন', 'আছো', 'বলো', 'করো', 'হয়েছে', 'যাও', 'দাও']
+        has_bengali_script = any('\u0980' <= char <= '\u09FF' for char in user_input)
+        has_bengali_words = any(word in user_input for word in bengali_indicators)
+        
+        if (has_bengali_script or has_bengali_words) and self.language_mode == "english":
+            self.language_mode = "banglish"
+            return f"ঠিক আছে {self.USER_NAME}! Banglish mode e switch korchi. Now I'll mix Bengali and English naturally.", "happy"
+        
         # Check for system time/date commands
         if any(word in user_input.lower() for word in ["time", "what time", "clock", "somoy", "koyta baje"]):
-            return self.commands.get_time(), "happy"
+            return self.commands.get_time(self.language_mode), "happy"
         
         if any(word in user_input.lower() for word in ["date", "what day", "today", "aj", "ajke", "tarikh"]):
-            return self.commands.get_date(), "happy"
+            return self.commands.get_date(self.language_mode), "happy"
         
-        # UPGRADE: Enhanced WhatsApp command
-        if "whatsapp" in user_input.lower() or "message" in user_input.lower() and "send" in user_input.lower():
-            result = self.commands.execute_whatsapp_command(user_input, self.CONTACTS)
+        # UPGRADE: Enhanced WhatsApp command with flexible opening
+        if "whatsapp" in user_input.lower():
+            result = self.commands.execute_whatsapp_command(user_input, self.CONTACTS, self.language_mode)
+            return result, "happy"
+        
+        # Handle "send message" separately
+        if "message" in user_input.lower() and "send" in user_input.lower():
+            result = self.commands.execute_whatsapp_command(user_input, self.CONTACTS, self.language_mode)
             return result, "happy"
         
         # UPGRADE: Enhanced search command
         if "search" in user_input.lower() or "google" in user_input.lower() or "khoj" in user_input.lower() or "khuje" in user_input.lower():
-            result = self.commands.execute_search_command(user_input)
+            result = self.commands.execute_search_command(user_input, self.language_mode)
             return result, "happy"
         
         # Check for system commands
         if "open" in user_input.lower() and any(app in user_input.lower() for app in ["chrome", "whatsapp", "code", "notepad"]):
-            result = self.commands.open_application(user_input)
+            result = self.commands.open_application(user_input, self.language_mode)
             return result, "happy"
         
         if "type this" in user_input.lower() or "type:" in user_input.lower():
-            result = self.commands.type_text(user_input)
+            result = self.commands.type_text(user_input, self.language_mode)
             return result, "happy"
         
         if "minimize" in user_input.lower() and "everything" in user_input.lower():
-            result = self.commands.minimize_all()
+            result = self.commands.minimize_all(self.language_mode)
             return result, "happy"
         
         if "screenshot" in user_input.lower():
@@ -269,7 +292,7 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
             if image_data:
                 response = self.chat_with_ollama("Describe what you see in this screenshot in detail.", image_data)
                 return response, "talking"
-            return f"Screenshot nite parini, {self.USER_NAME}.", "idle"
+            return f"Screenshot nite parini, {self.USER_NAME}." if self.language_mode == "banglish" else f"Couldn't take screenshot, {self.USER_NAME}.", "idle"
         
         # Vision mode: automatically capture screen if enabled
         image_data = None
