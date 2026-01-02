@@ -547,9 +547,9 @@ class CommandsHandler:
             
             print(f"[Terminal] Opening WhatsApp for {contact_name or phone}")
             
-            # Auto-press Enter after 10 seconds (user needs to be logged in to WhatsApp Web)
+            # Auto-press Enter after 2 seconds (user needs to be logged in to WhatsApp Web)
             def auto_send():
-                time.sleep(10)
+                time.sleep(2)
                 pyautogui.press('enter')
                 print("[Terminal] Auto-pressed Enter to send message")
             
@@ -560,9 +560,9 @@ class CommandsHandler:
             name_text = f"{contact_name}" if contact_name else "WhatsApp"
             
             if language_mode == "english":
-                return f"Okay, {user_name}! Sending message to {name_text}: '{message}'. Will auto-send in 10 seconds!"
+                return f"Okay, {user_name}! Sending message to {name_text}: '{message}'. Will auto-send in 2 seconds!"
             else:
-                return f"ঠিক আছে, {user_name}! {name_text} কে message পাঠাচ্ছি: '{message}'. ১০ seconds এ auto-send হবে!"
+                return f"ঠিক আছে, {user_name}! {name_text} কে message পাঠাচ্ছি: '{message}'. ২ seconds এ auto-send হবে!"
             
         except Exception as e:
             print(f"[Terminal] WhatsApp error: {e}")
