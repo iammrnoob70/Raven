@@ -26,6 +26,10 @@ from PIL import Image
 class RavenCore:
     """Core logic and AI integration for Raven Assistant"""
     
+    # ========== PERSONALIZATION ==========
+    # Set your name here - Raven will call you by this name
+    USER_NAME = "Sir"  # Change to your name (e.g., "Arif", "Rahul", "Ahmed") or keep "Sir"
+    
     # Contacts dictionary for WhatsApp
     CONTACTS = {
         "mom": "+8801234567890",
