@@ -1,70 +1,51 @@
-import customtkinter as ctk
-from PIL import Image, ImageTk
-import threading
-import json
-import os
-from datetime import datetime
-import requests
-import pyautogui
-import webbrowser
-import speech_recognition as sr
-import pyttsx3
-from duckduckgo_search import DDGS
-import time
-import io
-import base64
+"""Raven Assistant - Main Launcher
 
-class RavenAssistant:
-    def __init__(self):
-        # Initialize main window
-        self.root = ctk.CTk()
-        self.root.title("Raven Assistant")
-        self.root.geometry("800x900")
+A complete desktop AI assistant with:
+- Natural language chat (Ollama)
+- Vision capabilities (screenshot analysis)
+- Voice input/output
+- System automation commands
+- Persistent memory
+- Modern, state-based GUI
+
+Author: Emergent AI
+Version: 2.0 (Modular Production Release)
+"""
+
+import sys
+import os
+
+# Add current directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from raven_gui import RavenGUI
+
+
+def main():
+    """Launch Raven Assistant"""
+    print("=" * 60)
+    print("RAVEN ASSISTANT v2.0 - Starting...")
+    print("=" * 60)
+    print("\n[Terminal] Initializing Raven Assistant...")
+    print("[Terminal] All system logs will appear here.")
+    print("[Terminal] User chat messages will ONLY appear in the GUI.\n")
+    
+    try:
+        # Create and run GUI
+        app = RavenGUI()
+        app.run()
         
-        # Make window semi-transparent and always on top
-        self.root.attributes('-alpha', 0.95)
-        self.root.attributes('-topmost', True)
-        
-        # Set theme
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("blue")
-        
-        # Initialize variables
-        self.current_state = "idle"
-        self.voice_mode = False
-        self.vision_mode = False
-        self.live_vision_active = False
-        self.chat_history = []
-        
-        # Memory path
-        self.memory_path = "D:/Raven/Memory"
-        os.makedirs(self.memory_path, exist_ok=True)
-        self.memory_file = os.path.join(self.memory_path, "memory.json")
-        self.chat_log_file = os.path.join(self.memory_path, f"chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
-        
-        # Ollama settings
-        self.ollama_base_url = "http://localhost:11434"
-        self.text_model = "raven"  # Default model
-        self.vision_model = "llama3.2-vision"
-        
-        # Initialize speech engines
-        self.recognizer = sr.Recognizer()
-        self.tts_engine = pyttsx3.init()
-        self.tts_engine.setProperty('rate', 150)
-        self.tts_engine.setProperty('volume', 0.9)
-        
-        # State images paths (user needs to place these)
-        self.assets_path = os.path.join(os.path.dirname(__file__), "raven_assets")
-        os.makedirs(self.assets_path, exist_ok=True)
-        
-        # Load memory
-        self.load_memory()
-        
-        # Build GUI
-        self.build_gui()
-        
-        # Start idle animation
-        self.start_idle_animation()
+    except KeyboardInterrupt:
+        print("\n[Terminal] Shutdown requested by user")
+    except Exception as e:
+        print(f"\n[Terminal] Fatal error: {e}")
+        import traceback
+        traceback.print_exc()
+        input("\nPress Enter to exit...")
+
+
+if __name__ == "__main__":
+    main()
         
     def build_gui(self):
         # Main container
