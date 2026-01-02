@@ -199,45 +199,80 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      RAVEN ASSISTANT - FINAL ENHANCEMENTS COMPLETE!
+      🦅 RAVEN ELITE TRANSFORMATION COMPLETE! 🦅
       
-      All upgrades have been implemented:
+      ALL THREE PILLARS IMPLEMENTED:
       
-      1. ✅ Bengali Voice - edge-tts with 'bn-BD-NabanitaNeural' voice installed
-      2. ✅ Better Hearing - Enhanced ambient noise adjustment (1.0s) and pause_threshold (1.0)
-      3. ✅ Computer Control - Smart WhatsApp with contacts dictionary, enhanced search
-      4. ✅ Modern UI - Floating, draggable, semi-transparent window with glow effects
-      5. ✅ Banglish Personality - All responses in Banglish mix
+      ✅ PILLAR 1: ELITE DARK UI (Glassmorphism)
+         - Deep Charcoal (#0a0a0a) background with 0.85 opacity
+         - Neon Blue (#00f2ff) borders for futuristic look
+         - Pulsing glow animations (separate thread)
+         - 6 mood-based colors:
+           * Emerald Green (#50fa7b) - Listening
+           * Electric Violet (#bd93f9) - Thinking
+           * Deep Crimson (#dc143c) - Stressed/Angry ⚠️
+           * Cyan, Yellow, Blue for other states
+         - Bouncing avatar animation during talking/thinking
+         - Live mood indicator in title bar
       
-      NEW FINAL IMPROVEMENTS (v2.1):
-      6. ✅ Language Logic - Switch between English/Banglish modes, persists across restarts
-      7. ✅ Always Listening - Continuous Listen-Respond-Listen loop when Voice Toggle ON
-      8. ✅ UI Continuity - Window always on top, language mode saved in memory
-      9. ✅ WhatsApp Reliability - 2-second auto-send delay for reliable messaging
-      10. ✅ Idle Personality - Witty Banglish messages after 30s of silence
+      ✅ PILLAR 2: EMOTIONALLY HUMAN LOGIC
+         - Mood detection from keywords:
+           * Stressed/Angry: "stressed", "angry", "frustrated", "রাগ"
+           * Sad: "sad", "upset", "মন খারাপ"
+           * Tired: "tired", "thaka", "ক্লান্ত"
+           * Happy: "happy", "great", "খুশি"
+         - Adaptive Banglish responses:
+           * Stressed: "Sir, ektu relax koren, ami achi to. Tea break niben?"
+           * Sad: "কি হয়েছে? Share করতে পারো, I'm here for you"
+           * Tired: "Rest nao, Sir. I'll handle things!"
+         - Mood memory (last 5 moods tracked)
+         - Mood-aware AI prompts to Ollama
+         - Persistent mood storage in memory.json
       
-      NEXT STEPS:
-      - User should add their contacts to CONTACTS dictionary in raven_core.py (line 34-40)
-      - Run the application: python raven_assistant.py
-      - Say "English" to switch to English mode, speak Bengali to return to Banglish
-      - Test continuous voice listening with Voice Toggle ON
-      - Test WhatsApp commands: "Open WhatsApp" or "Send message to [contact]"
-      - Verify window stays on top and language mode persists after restart
-  
-  - agent: "main"
-    message: |
-      IMPLEMENTATION DETAILS:
+      ✅ PILLAR 3: UNIVERSAL FILE OPENER
+         - Automatic file path detection (regex-based)
+         - Supported formats:
+           * PDFs/Docs (.pdf, .docx, .xlsx, .pptx) → Default viewer
+           * Images (.png, .jpg, .gif, .webp) → Photos app
+           * Code (.py, .js, .html, .css, .json) → VS Code (fallback: default)
+           * Videos (.mp4, .avi, .mkv) → Default player
+           * Audio (.mp3, .wav, .ogg) → Default player
+         - Usage: "Raven, open D:/Documents/report.pdf" or just mention filepath
+         - Cross-platform support (Windows/Linux/Mac)
       
-      Modified Files:
-      - /app/raven_core.py: Added language_mode state, updated memory system, 2s WhatsApp delay
-      - /app/raven_gui.py: Enhanced voice loop, idle timeout with witty messages
+      🔧 SYSTEM INTEGRATION:
+         - Always on top ✓
+         - Draggable window ✓
+         - Bengali voice (edge-tts) ✓
+         - Smooth threading for UI responsiveness ✓
       
-      Key Features:
-      - Language switching: Say "English" or speak Bengali to switch modes
-      - Memory persistence: language_mode saved in history.json
-      - Continuous listening: No interruption between voice responses
-      - Smart WhatsApp: Direct "Open WhatsApp" command, 2s auto-send
-      - Idle messages: Random witty Banglish phrases after 30s silence
-      - Always on top: Window stays visible over other apps
+      📋 TESTING INSTRUCTIONS:
+      1. Run: python raven_assistant.py
+      2. Test Mood Detection:
+         - Say "I'm stressed" → Should trigger Deep Crimson glow + calming response
+         - Say "I'm happy" → Should trigger Yellow glow + witty response
+         - Say "I'm tired" → Should suggest rest
+      3. Test File Opener:
+         - Type "Raven, open D:/path/to/file.pdf"
+         - Or just mention a filepath in conversation
+      4. Test UI:
+         - Check glassmorphism effect (0.85 opacity)
+         - Verify neon blue borders
+         - Watch avatar bounce during talking
+         - Verify pulsing glow animations
+      5. Test Mood Indicator:
+         - Check title bar for mood emoji and label
       
-      See /app/RAVEN_IMPROVEMENTS.md for complete documentation
+      🎨 VISUAL CHANGES:
+      - Title changed to "🦅 RAVEN ELITE"
+      - Neon blue accents throughout
+      - Mood emoji in title bar
+      - Bouncing avatar when active
+      - Deep crimson alert mode for stress
+      
+      💾 DATA PERSISTENCE:
+      - Mood history saved in D:/Raven/Memory/history.json
+      - Last 5 moods tracked with timestamps
+      - Language mode persistence
+      
+      🚀 READY FOR USER TESTING!
