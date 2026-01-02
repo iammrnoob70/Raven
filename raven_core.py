@@ -246,7 +246,7 @@ Raven (respond in Banglish, naturally mixing Bengali and English, address user a
             if image_data:
                 response = self.chat_with_ollama("Describe what you see in this screenshot in detail.", image_data)
                 return response, "talking"
-            return "Screenshot nite parini, bondhu.", "idle"
+            return f"Screenshot nite parini, {self.USER_NAME}.", "idle"
         
         # Vision mode: automatically capture screen if enabled
         image_data = None
