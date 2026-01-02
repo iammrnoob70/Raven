@@ -368,7 +368,9 @@ class CommandsHandler:
     def get_time(self) -> str:
         """Return current time in Banglish"""
         current_time = datetime.now().strftime("%I:%M %p")
-        return f"Ekhon somoy holo {current_time}, bondhu!"
+        # Get user name from RavenCore class
+        user_name = RavenCore.USER_NAME
+        return f"Ekhon somoy holo {current_time}, {user_name}!"
     
     def get_date(self) -> str:
         """Return current date in Banglish"""
