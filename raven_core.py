@@ -123,7 +123,7 @@ class RavenCore:
             return f"{greeting} {day_context}"
     
     def load_memory(self) -> None:
-        """Load last 20 messages from memory on startup"""
+        """Load last 20 messages and language mode from memory on startup"""
         if os.path.exists(self.memory_file):
             try:
                 with open(self.memory_file, "r", encoding="utf-8") as f:
@@ -131,22 +131,25 @@ class RavenCore:
                     all_history = data.get("chat_history", [])
                     # Load last 20 messages
                     self.chat_history = all_history[-20:] if len(all_history) > 20 else all_history
-                print(f"[Terminal] Memory load hoye geche: {len(self.chat_history)} messages")
+                    # Load language mode
+                    self.language_mode = data.get("language_mode", "banglish")
+                print(f"[Terminal] Memory load hoye geche: {len(self.chat_history)} messages, Language: {self.language_mode}")
             except Exception as e:
                 print(f"[Terminal] Memory load korte parini: {e}")
         else:
             print("[Terminal] Kono previous memory nei, notun shuru korchi")
     
     def save_memory(self) -> None:
-        """Save conversation history to JSON file"""
+        """Save conversation history and language mode to JSON file"""
         try:
             data = {
                 "chat_history": self.chat_history,
+                "language_mode": self.language_mode,
                 "last_updated": datetime.now().isoformat()
             }
             with open(self.memory_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            print(f"[Terminal] Memory save hoye geche: {len(self.chat_history)} messages")
+            print(f"[Terminal] Memory save hoye geche: {len(self.chat_history)} messages, Language: {self.language_mode}")
         except Exception as e:
             print(f"[Terminal] Memory save korte problem: {e}")
     
