@@ -101,3 +101,88 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Upgrade Raven Assistant with:
+  1. Bengali Voice (Voice Out) - Replace pyttsx3 with edge-tts using 'bn-BD-NabanitaNeural' voice
+  2. Better Hearing (Voice In) - Improved ambient noise adjustment and pause threshold
+  3. Computer Control - Smart WhatsApp messaging with contacts dictionary and enhanced search
+  4. Modern UI - Floating, draggable, semi-transparent window with glow effects
+  5. Banglish Personality - Mix of Bengali and English in all responses
+
+backend:
+  - task: "Core Logic Upgrade (raven_core.py)"
+    implemented: true
+    working: "NA"
+    file: "raven_core.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Upgraded raven_core.py with:
+          - Replaced pyttsx3 with edge-tts (Bengali voice 'bn-BD-NabanitaNeural')
+          - Added pygame for audio playback
+          - Enhanced speech recognition with 1.0s ambient noise adjustment and pause_threshold
+          - Smart WhatsApp command with contacts dictionary
+          - Enhanced search command
+          - Banglish personality in all responses
+          - All system commands updated with Banglish responses
+
+frontend:
+  - task: "Modern GUI Upgrade (raven_gui.py)"
+    implemented: true
+    working: "NA"
+    file: "raven_gui.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Upgraded raven_gui.py with:
+          - Borderless floating window (overrideredirect)
+          - Semi-transparent background (0.9 opacity)
+          - Always on top functionality
+          - Draggable window support
+          - Enhanced glow effects for different states (Emerald Green, Electric Violet, Soft Blue)
+          - Modern control buttons with Consolas font
+          - Rounded corners and sleek design
+          - Chat bubble styling improvements
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Core Logic Upgrade (raven_core.py)"
+    - "Modern GUI Upgrade (raven_gui.py)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      RAVEN ASSISTANT UPGRADE COMPLETE!
+      
+      All upgrades have been implemented:
+      
+      1. ✅ Bengali Voice - edge-tts with 'bn-BD-NabanitaNeural' voice installed
+      2. ✅ Better Hearing - Enhanced ambient noise adjustment (1.0s) and pause_threshold (1.0)
+      3. ✅ Computer Control - Smart WhatsApp with contacts dictionary, enhanced search
+      4. ✅ Modern UI - Floating, draggable, semi-transparent window with glow effects
+      5. ✅ Banglish Personality - All responses in Banglish mix
+      
+      NEXT STEPS:
+      - User should add their contacts to CONTACTS dictionary in raven_core.py (line 31-37)
+      - Run the application: python raven_assistant.py
+      - Test voice, vision, WhatsApp, and search features
+      - Verify Bengali voice output is working
+      - Test draggable window functionality
