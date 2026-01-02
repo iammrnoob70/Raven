@@ -462,10 +462,10 @@ class CommandsHandler:
                 url = f"https://www.google.com/search?q={search_term.replace(' ', '+')}"
                 webbrowser.open(url)
                 print(f"[Terminal] Searching for: {search_term}")
-                return f"Thik ache! Google e khujchi '{search_term}'..."
+                return f"Thik ache, {RavenCore.USER_NAME}! Google e khujchi '{search_term}'..."
             except Exception as e:
                 print(f"[Terminal] Search error: {e}")
-                return "Browser open korte parchi na, bondhu."
+                return f"Browser open korte parchi na, {RavenCore.USER_NAME}."
         
         return "Ki search korbo? Ektu clearly bolo."
     
