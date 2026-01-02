@@ -206,7 +206,7 @@ Raven (respond in Banglish, naturally mixing Bengali and English, address user a
             return "Error: Ollama er sathe connection nei. Please check if Ollama is running (ollama serve)"
         except Exception as e:
             print(f"[Terminal] Ollama communication error: {e}")
-            return f"Ami ektu error face korchi, bondhu. Try again koro?"
+            return f"Ami ektu error face korchi, {self.USER_NAME}. Try again koro?"
     
     def process_message(self, user_input: str) -> tuple[str, str]:
         """Process user message and return (response, new_state)"""
