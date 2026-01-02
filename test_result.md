@@ -170,7 +170,7 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      RAVEN ASSISTANT UPGRADE COMPLETE!
+      RAVEN ASSISTANT - FINAL ENHANCEMENTS COMPLETE!
       
       All upgrades have been implemented:
       
@@ -180,9 +180,35 @@ agent_communication:
       4. ✅ Modern UI - Floating, draggable, semi-transparent window with glow effects
       5. ✅ Banglish Personality - All responses in Banglish mix
       
+      NEW FINAL IMPROVEMENTS (v2.1):
+      6. ✅ Language Logic - Switch between English/Banglish modes, persists across restarts
+      7. ✅ Always Listening - Continuous Listen-Respond-Listen loop when Voice Toggle ON
+      8. ✅ UI Continuity - Window always on top, language mode saved in memory
+      9. ✅ WhatsApp Reliability - 2-second auto-send delay for reliable messaging
+      10. ✅ Idle Personality - Witty Banglish messages after 30s of silence
+      
       NEXT STEPS:
-      - User should add their contacts to CONTACTS dictionary in raven_core.py (line 31-37)
+      - User should add their contacts to CONTACTS dictionary in raven_core.py (line 34-40)
       - Run the application: python raven_assistant.py
-      - Test voice, vision, WhatsApp, and search features
-      - Verify Bengali voice output is working
-      - Test draggable window functionality
+      - Say "English" to switch to English mode, speak Bengali to return to Banglish
+      - Test continuous voice listening with Voice Toggle ON
+      - Test WhatsApp commands: "Open WhatsApp" or "Send message to [contact]"
+      - Verify window stays on top and language mode persists after restart
+  
+  - agent: "main"
+    message: |
+      IMPLEMENTATION DETAILS:
+      
+      Modified Files:
+      - /app/raven_core.py: Added language_mode state, updated memory system, 2s WhatsApp delay
+      - /app/raven_gui.py: Enhanced voice loop, idle timeout with witty messages
+      
+      Key Features:
+      - Language switching: Say "English" or speak Bengali to switch modes
+      - Memory persistence: language_mode saved in history.json
+      - Continuous listening: No interruption between voice responses
+      - Smart WhatsApp: Direct "Open WhatsApp" command, 2s auto-send
+      - Idle messages: Random witty Banglish phrases after 30s silence
+      - Always on top: Window stays visible over other apps
+      
+      See /app/RAVEN_IMPROVEMENTS.md for complete documentation
