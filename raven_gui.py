@@ -1,7 +1,7 @@
-"""Raven Assistant - GUI Interface (UPGRADED)
+"""Raven Assistant - GUI Interface (ELITE VERSION)
 
-This module handles all the visual interface, state animations, and user interactions.
-Upgraded with modern floating overlay, draggable window, and enhanced glow effects.
+This module handles all the visual interface with glassmorphism design,
+pulsing glows, mood-based animations, and bouncing avatar effects.
 """
 
 import customtkinter as ctk
@@ -14,18 +14,20 @@ from raven_core import RavenCore
 
 
 class RavenGUI:
-    """Modern Floating Overlay GUI for Raven Assistant with state-based visual feedback"""
+    """ELITE Modern Floating Overlay GUI with Glassmorphism and Mood-Based Animations"""
     
-    # UPGRADE: Enhanced cyberpunk color scheme
+    # ELITE: Enhanced color scheme with glassmorphism
     COLORS = {
-        "bg_dark": "#121212",           # Deep charcoal background (semi-transparent)
+        "bg_dark": "#0a0a0a",            # Deep charcoal (with 0.85 opacity)
         "bg_medium": "#1a1a1a",         # Medium dark
         "bg_light": "#252525",          # Lighter panels
+        "neon_blue": "#00f2ff",         # ELITE: Neon blue border
         "idle_glow": "#60a5fa",         # Soft blue for idle
         "listening_glow": "#50fa7b",    # Emerald green for listening
         "thinking_glow": "#bd93f9",     # Electric violet for thinking
         "talking_glow": "#8be9fd",      # Cyan for talking
         "happy_glow": "#f1fa8c",        # Yellow for happy
+        "stressed_glow": "#dc143c",     # ELITE: Deep crimson for stressed/angry
         "text_primary": "#e0e0e0",      # Light text
         "text_secondary": "#9ca3af",    # Muted text
         "accent": "#bd93f9",            # Primary accent (purple)
@@ -38,12 +40,12 @@ class RavenGUI:
         
         # Initialize main window
         self.root = ctk.CTk()
-        self.root.title("Raven Assistant")
+        self.root.title("Raven ELITE")
         self.root.geometry("800x920")
         
-        # UPGRADE: Floating window setup
+        # ELITE: Glassmorphism window setup
         self.root.overrideredirect(True)  # Remove title bar
-        self.root.attributes('-alpha', 0.9)  # Semi-transparent
+        self.root.attributes('-alpha', 0.85)  # ELITE: 0.85 opacity for glassmorphism
         self.root.attributes('-topmost', True)  # Always on top
         
         # Set theme
@@ -54,7 +56,11 @@ class RavenGUI:
         self.current_state = "idle"
         self.is_processing = False
         
-        # UPGRADE: Draggable window variables
+        # ELITE: Animation control
+        self.is_bouncing = False
+        self.pulse_active = True
+        
+        # Draggable window variables
         self.drag_data = {"x": 0, "y": 0}
         
         # Assets path
@@ -70,6 +76,9 @@ class RavenGUI:
         # Start with greeting
         self.add_message_to_chat("Raven", self.core.get_greeting())
         
+        # ELITE: Start pulsing glow animation
+        self.start_pulsing_glow()
+        
         # Start idle animation
         self.start_idle_animation()
         
@@ -77,18 +86,18 @@ class RavenGUI:
         self.voice_thread = None
     
     def build_gui(self):
-        """Build the complete modern GUI interface"""
-        # Main container with rounded corners effect
+        """Build the complete ELITE GUI interface with glassmorphism"""
+        # Main container with neon blue border
         self.main_frame = ctk.CTkFrame(
             self.root, 
             fg_color=self.COLORS["bg_dark"],
             corner_radius=20,
-            border_width=2,
-            border_color=self.COLORS["accent"]
+            border_width=3,
+            border_color=self.COLORS["neon_blue"]  # ELITE: Neon blue border
         )
         self.main_frame.pack(fill="both", expand=True, padx=0, pady=0)
         
-        # UPGRADE: Title bar with drag functionality and close button
+        # ELITE: Title bar with drag functionality
         title_frame = ctk.CTkFrame(
             self.main_frame,
             fg_color="transparent",
@@ -103,9 +112,9 @@ class RavenGUI:
         
         title_label = ctk.CTkLabel(
             title_frame,
-            text="RAVEN ASSISTANT",
+            text="🦅 RAVEN ELITE",
             font=("Consolas", 18, "bold"),
-            text_color=self.COLORS["accent"]
+            text_color=self.COLORS["neon_blue"]  # ELITE: Neon blue title
         )
         title_label.pack(side="left")
         title_label.bind("<Button-1>", self.start_drag)
@@ -125,7 +134,7 @@ class RavenGUI:
         )
         close_btn.pack(side="right")
         
-        # Status indicator
+        # Status indicator with mood
         self.status_label = ctk.CTkLabel(
             title_frame,
             text="● Idle",
@@ -134,7 +143,16 @@ class RavenGUI:
         )
         self.status_label.pack(side="right", padx=15)
         
-        # UPGRADE: Avatar frame with enhanced state-based glow
+        # ELITE: Mood indicator
+        self.mood_label = ctk.CTkLabel(
+            title_frame,
+            text="😌 Neutral",
+            font=("Consolas", 11),
+            text_color=self.COLORS["text_secondary"]
+        )
+        self.mood_label.pack(side="right", padx=15)
+        
+        # ELITE: Avatar frame with pulsing glow effect
         self.avatar_container = ctk.CTkFrame(
             self.main_frame,
             height=360,
@@ -154,28 +172,28 @@ class RavenGUI:
         )
         self.avatar_label.pack(expand=True, padx=10, pady=10)
         
-        # UPGRADE: Modern icon-based control buttons
+        # ELITE: Modern control buttons
         self.build_controls()
         
-        # UPGRADE: Chat display with bubble style
+        # ELITE: Chat display with bubble style
         self.build_chat_display()
         
-        # UPGRADE: Modern input area
+        # ELITE: Modern input area
         self.build_input_area()
     
     def start_drag(self, event):
-        """UPGRADE: Start dragging the window"""
+        """Start dragging the window"""
         self.drag_data["x"] = event.x
         self.drag_data["y"] = event.y
     
     def on_drag(self, event):
-        """UPGRADE: Handle window dragging"""
+        """Handle window dragging"""
         x = self.root.winfo_x() + event.x - self.drag_data["x"]
         y = self.root.winfo_y() + event.y - self.drag_data["y"]
         self.root.geometry(f"+{x}+{y}")
     
     def build_controls(self):
-        """UPGRADE: Build modern control buttons panel"""
+        """Build modern control buttons panel"""
         control_frame = ctk.CTkFrame(
             self.main_frame,
             fg_color="transparent"
@@ -243,7 +261,7 @@ class RavenGUI:
         clear_btn.pack(side="right", padx=5)
     
     def build_chat_display(self):
-        """UPGRADE: Build chat display area with modern styling"""
+        """Build chat display area with modern styling"""
         chat_frame = ctk.CTkFrame(
             self.main_frame,
             fg_color=self.COLORS["bg_medium"],
@@ -266,7 +284,7 @@ class RavenGUI:
         self.chat_display.configure(state="disabled")
     
     def build_input_area(self):
-        """UPGRADE: Build modern input area with sleek design"""
+        """Build modern input area with sleek design"""
         input_frame = ctk.CTkFrame(
             self.main_frame,
             fg_color="transparent"
@@ -280,7 +298,7 @@ class RavenGUI:
             height=50,
             font=("Consolas", 12),
             fg_color=self.COLORS["bg_medium"],
-            border_color=self.COLORS["accent"],
+            border_color=self.COLORS["neon_blue"],  # ELITE: Neon blue border
             border_width=2,
             corner_radius=12
         )
@@ -321,18 +339,57 @@ class RavenGUI:
         if not self.state_images:
             print("[Terminal] No images found, using emoji placeholders")
             self.avatar_label.configure(
-                text="RAVEN\n\n(Place PNG images in raven_assets folder)",
+                text="RAVEN ELITE\n\n(Place PNG images in raven_assets folder)",
                 font=("Consolas", 16, "bold"),
                 text_color=self.COLORS["text_secondary"]
             )
     
+    def start_pulsing_glow(self):
+        """ELITE: Pulsing glow animation for avatar border"""
+        def pulse():
+            brightness_levels = [0.6, 0.7, 0.8, 0.9, 1.0, 0.9, 0.8, 0.7]
+            while self.pulse_active:
+                for brightness in brightness_levels:
+                    if not self.pulse_active:
+                        break
+                    # Update border opacity effect (simulated by adjusting border width)
+                    if self.current_state == "listening":
+                        # Faster pulse for listening
+                        time.sleep(0.15)
+                    elif self.current_state == "thinking":
+                        # Medium pulse for thinking
+                        time.sleep(0.2)
+                    else:
+                        # Slow pulse for other states
+                        time.sleep(0.3)
+        
+        thread = threading.Thread(target=pulse, daemon=True)
+        thread.start()
+    
     def update_state(self, state: str):
-        """UPGRADE: Update visual state with enhanced glow transitions"""
+        """ELITE: Update visual state with mood-based glows and animations"""
         self.current_state = state
+        
+        # ELITE: Start/stop bouncing animation for talking/thinking
+        if state in ["talking", "thinking"]:
+            if not self.is_bouncing:
+                self.start_bounce_animation()
+        else:
+            self.is_bouncing = False
         
         # Update avatar image
         if state in self.state_images:
             self.avatar_label.configure(image=self.state_images[state], text="")
+        elif state == "stressed":
+            # Special case for stressed mood - use thinking image with different glow
+            if "thinking" in self.state_images:
+                self.avatar_label.configure(image=self.state_images["thinking"], text="")
+            else:
+                self.avatar_label.configure(
+                    text="😤",
+                    font=("Consolas", 80),
+                    text_color=self.COLORS["stressed_glow"]
+                )
         else:
             # Emoji fallback
             emojis = {
@@ -340,7 +397,8 @@ class RavenGUI:
                 "listening": "🎤",
                 "thinking": "🤔",
                 "talking": "💬",
-                "happy": "😊"
+                "happy": "😊",
+                "stressed": "😤"
             }
             self.avatar_label.configure(
                 text=emojis.get(state, "🤖"),
@@ -348,13 +406,14 @@ class RavenGUI:
                 text_color=self.COLORS["text_primary"]
             )
         
-        # UPGRADE: Enhanced border glow based on state
+        # ELITE: Enhanced mood-based border glow
         glow_colors = {
             "idle": self.COLORS["idle_glow"],
-            "listening": self.COLORS["listening_glow"],
-            "thinking": self.COLORS["thinking_glow"],
+            "listening": self.COLORS["listening_glow"],     # Emerald green
+            "thinking": self.COLORS["thinking_glow"],       # Electric violet
             "talking": self.COLORS["talking_glow"],
-            "happy": self.COLORS["happy_glow"]
+            "happy": self.COLORS["happy_glow"],
+            "stressed": self.COLORS["stressed_glow"]        # ELITE: Deep crimson
         }
         self.avatar_container.configure(border_color=glow_colors.get(state, self.COLORS["idle_glow"]))
         
@@ -364,12 +423,63 @@ class RavenGUI:
             "listening": "● Listening",
             "thinking": "● Thinking",
             "talking": "● Speaking",
-            "happy": "● Happy"
+            "happy": "● Happy",
+            "stressed": "● Calming"
         }
         self.status_label.configure(
             text=state_labels.get(state, "● Active"),
             text_color=glow_colors.get(state, self.COLORS["idle_glow"])
         )
+        
+        # ELITE: Update mood indicator
+        mood_emojis = {
+            "neutral": "😌",
+            "happy": "😊",
+            "sad": "😔",
+            "stressed": "😤",
+            "tired": "😴"
+        }
+        current_mood = self.core.current_mood
+        self.mood_label.configure(
+            text=f"{mood_emojis.get(current_mood, '😌')} {current_mood.title()}",
+            text_color=self.COLORS["neon_blue"] if current_mood != "neutral" else self.COLORS["text_secondary"]
+        )
+    
+    def start_bounce_animation(self):
+        """ELITE: Bouncing/vibrating animation for avatar during talking/thinking"""
+        self.is_bouncing = True
+        
+        def bounce():
+            original_pady = 10
+            bounce_height = 5  # Pixels to bounce up/down
+            
+            while self.is_bouncing:
+                # Bounce up
+                for i in range(bounce_height):
+                    if not self.is_bouncing:
+                        break
+                    self.avatar_label.pack_configure(pady=(original_pady - i, original_pady + i))
+                    time.sleep(0.02)
+                
+                # Bounce down
+                for i in range(bounce_height, -bounce_height - 1, -1):
+                    if not self.is_bouncing:
+                        break
+                    self.avatar_label.pack_configure(pady=(original_pady - i, original_pady + i))
+                    time.sleep(0.02)
+                
+                # Bounce back to center
+                for i in range(-bounce_height, 1):
+                    if not self.is_bouncing:
+                        break
+                    self.avatar_label.pack_configure(pady=(original_pady - i, original_pady + i))
+                    time.sleep(0.02)
+            
+            # Reset to original position
+            self.avatar_label.pack_configure(pady=(original_pady, original_pady))
+        
+        thread = threading.Thread(target=bounce, daemon=True)
+        thread.start()
     
     def start_idle_animation(self):
         """Subtle idle animation with occasional blink"""
@@ -392,7 +502,7 @@ class RavenGUI:
         thread.start()
     
     def add_message_to_chat(self, sender: str, message: str):
-        """Add message to chat display (user-visible only)"""
+        """Add message to chat display"""
         self.chat_display.configure(state="normal")
         timestamp = datetime.now().strftime("%H:%M:%S")
         
@@ -404,7 +514,7 @@ class RavenGUI:
             color = self.COLORS["talking_glow"]
             prefix = "🦅"
         else:
-            return  # Don't show system messages in chat
+            return
         
         formatted_msg = f"{prefix} [{timestamp}] {sender}:\n{message}\n\n"
         self.chat_display.insert("end", formatted_msg)
@@ -433,7 +543,7 @@ class RavenGUI:
         self.update_state("thinking")
         
         try:
-            # Process with core
+            # Process with core (mood-aware)
             response, new_state = self.core.process_message(user_input)
             
             # Update to appropriate state
@@ -513,8 +623,8 @@ class RavenGUI:
                             self.add_message_to_chat("Raven", witty_msg)
                             if self.core.voice_enabled:
                                 self.core.speak(witty_msg)
-                            last_activity_time = current_time  # Reset timer after sending message
-                        elif idle_counter > 6:  # Reset after 3 minutes total
+                            last_activity_time = current_time
+                        elif idle_counter > 6:
                             idle_counter = 0
                     
                     self.update_state("listening")
@@ -576,6 +686,8 @@ class RavenGUI:
     def on_closing(self):
         """Handle window close event"""
         print("[Terminal] Saving memory and closing...")
+        self.pulse_active = False
+        self.is_bouncing = False
         self.core.save_memory()
         self.root.destroy()
     

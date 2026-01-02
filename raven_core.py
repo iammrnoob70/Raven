@@ -1,7 +1,7 @@
-"""Raven Assistant - Core Logic Engine (UPGRADED)
+"""Raven Assistant - Core Logic Engine (ELITE VERSION)
 
 This module contains all the business logic, AI integration, and system commands.
-Upgraded with Bengali voice, better hearing, and enhanced computer control.
+Upgraded to Elite version with mood detection, emotional intelligence, and file opener.
 """
 
 import os
@@ -11,6 +11,8 @@ import base64
 import io
 import asyncio
 import tempfile
+import re
+import subprocess
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 import requests
@@ -24,7 +26,7 @@ from PIL import Image
 
 
 class RavenCore:
-    """Core logic and AI integration for Raven Assistant"""
+    """Core logic and AI integration for Raven Assistant (ELITE VERSION)"""
     
     # ========== PERSONALIZATION ==========
     # Set your name here - Raven will call you by this name
@@ -58,15 +60,19 @@ class RavenCore:
         self.voice_enabled = False
         self.language_mode = "banglish"  # Can be "english" or "banglish"
         
+        # ELITE: Mood tracking for emotional intelligence
+        self.mood_history: List[Dict[str, Any]] = []  # Track last 5 moods
+        self.current_mood = "neutral"  # neutral, happy, sad, stressed, tired
+        
         # Speech engines
         self.recognizer = sr.Recognizer()
-        # UPGRADE: Better hearing settings
-        self.recognizer.pause_threshold = 1.0  # Don't cut off while speaking
+        # Better hearing settings
+        self.recognizer.pause_threshold = 1.0
         self.recognizer.energy_threshold = 4000
         
         self.mic_available = True
         
-        # UPGRADE: Bengali TTS with edge-tts
+        # Bengali TTS with edge-tts
         self.tts_voice = "bn-BD-NabanitaNeural"  # Bengali female voice
         pygame.mixer.init()
         self.temp_audio_path = os.path.join(tempfile.gettempdir(), "raven_speech.mp3")
@@ -77,8 +83,72 @@ class RavenCore:
         # Initialize commands handler
         self.commands = CommandsHandler()
         
-        print("[Terminal] Raven Core initialized with Bengali voice and enhanced controls")
+        print("[Terminal] 🦅 Raven ELITE Core initialized - Emotionally intelligent and ready!")
         
+    def detect_mood(self, text: str) -> str:
+        """ELITE: Detect user's mood from their message"""
+        text_lower = text.lower()
+        
+        # Stressed/Angry keywords
+        stressed_keywords = ['stressed', 'angry', 'frustrated', 'রাগ', 'irritated', 'annoyed', 'problem', 'issue']
+        if any(keyword in text_lower for keyword in stressed_keywords):
+            return "stressed"
+        
+        # Sad keywords
+        sad_keywords = ['sad', 'upset', 'মন খারাপ', 'down', 'depressed', 'unhappy', 'lonely']
+        if any(keyword in text_lower for keyword in sad_keywords):
+            return "sad"
+        
+        # Tired keywords
+        tired_keywords = ['tired', 'thaka', 'ক্লান্ত', 'exhausted', 'sleepy', 'fatigue']
+        if any(keyword in text_lower for keyword in tired_keywords):
+            return "tired"
+        
+        # Happy keywords
+        happy_keywords = ['happy', 'great', 'excellent', 'খুশি', 'awesome', 'wonderful', 'amazing', 'love']
+        if any(keyword in text_lower for keyword in happy_keywords):
+            return "happy"
+        
+        return "neutral"
+    
+    def update_mood_history(self, mood: str, message: str):
+        """ELITE: Track mood history for contextual awareness"""
+        self.current_mood = mood
+        self.mood_history.append({
+            "mood": mood,
+            "message": message,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # Keep only last 5 moods
+        if len(self.mood_history) > 5:
+            self.mood_history.pop(0)
+        
+        print(f"[Terminal] 💭 Mood detected: {mood}")
+    
+    def get_mood_context(self) -> str:
+        """ELITE: Generate mood context for AI prompt"""
+        if not self.mood_history:
+            return "User mood: neutral"
+        
+        recent_moods = [m['mood'] for m in self.mood_history[-3:]]
+        mood_summary = ", ".join(recent_moods)
+        
+        return f"User's recent moods: {mood_summary}. Current mood: {self.current_mood}"
+    
+    def get_mood_adaptive_response_prefix(self) -> str:
+        """ELITE: Generate response prefix based on current mood"""
+        if self.current_mood == "stressed":
+            return f"IMPORTANT: {self.USER_NAME} is stressed or angry. Be VERY caring and calming. Suggest taking a break. Use phrases like 'ektu relax koren, ami achi to' or 'Tea break niben?'"
+        elif self.current_mood == "sad":
+            return f"IMPORTANT: {self.USER_NAME} seems sad or down. Be supportive and empathetic. Use phrases like 'কি হয়েছে? Share করতে পারো, I'm here for you' or 'Don't worry, everything will be okay'"
+        elif self.current_mood == "tired":
+            return f"IMPORTANT: {self.USER_NAME} is tired. Be gentle and suggest rest. Use phrases like 'Rest nao, Sir. I'll handle things!' or 'একটু ঘুমিয়ে নাও'"
+        elif self.current_mood == "happy":
+            return f"IMPORTANT: {self.USER_NAME} is happy! Match their energy with witty, playful responses. Be slightly more sarcastic and fun."
+        else:
+            return ""
+    
     def get_greeting(self) -> str:
         """Generate context-aware greeting based on time, day, and language mode"""
         now = datetime.now()
@@ -123,7 +193,7 @@ class RavenCore:
             return f"{greeting} {day_context}"
     
     def load_memory(self) -> None:
-        """Load last 20 messages and language mode from memory on startup"""
+        """Load last 20 messages, language mode, and mood history from memory"""
         if os.path.exists(self.memory_file):
             try:
                 with open(self.memory_file, "r", encoding="utf-8") as f:
@@ -133,25 +203,30 @@ class RavenCore:
                     self.chat_history = all_history[-20:] if len(all_history) > 20 else all_history
                     # Load language mode
                     self.language_mode = data.get("language_mode", "banglish")
-                print(f"[Terminal] Memory load hoye geche: {len(self.chat_history)} messages, Language: {self.language_mode}")
+                    # Load mood history
+                    self.mood_history = data.get("mood_history", [])
+                    if self.mood_history:
+                        self.current_mood = self.mood_history[-1].get("mood", "neutral")
+                print(f"[Terminal] Memory loaded: {len(self.chat_history)} messages, Language: {self.language_mode}, Last mood: {self.current_mood}")
             except Exception as e:
-                print(f"[Terminal] Memory load korte parini: {e}")
+                print(f"[Terminal] Memory load error: {e}")
         else:
-            print("[Terminal] Kono previous memory nei, notun shuru korchi")
+            print("[Terminal] No previous memory, starting fresh")
     
     def save_memory(self) -> None:
-        """Save conversation history and language mode to JSON file"""
+        """Save conversation history, language mode, and mood history to JSON file"""
         try:
             data = {
                 "chat_history": self.chat_history,
                 "language_mode": self.language_mode,
+                "mood_history": self.mood_history,
                 "last_updated": datetime.now().isoformat()
             }
             with open(self.memory_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            print(f"[Terminal] Memory save hoye geche: {len(self.chat_history)} messages, Language: {self.language_mode}")
+            print(f"[Terminal] Memory saved: {len(self.chat_history)} messages, Mood: {self.current_mood}")
         except Exception as e:
-            print(f"[Terminal] Memory save korte problem: {e}")
+            print(f"[Terminal] Memory save error: {e}")
     
     def log_chat(self, sender: str, message: str) -> None:
         """Log chat message to file and history"""
@@ -163,7 +238,7 @@ class RavenCore:
             with open(self.chat_log_file, "a", encoding="utf-8") as f:
                 f.write(formatted_msg)
         except Exception as e:
-            print(f"[Terminal] Chat log write korte problem: {e}")
+            print(f"[Terminal] Chat log write error: {e}")
         
         # Add to history
         self.chat_history.append({
@@ -173,7 +248,7 @@ class RavenCore:
         })
     
     def chat_with_ollama(self, user_input: str, image_data: Optional[str] = None) -> str:
-        """Send message to Ollama and get response with language mode awareness"""
+        """Send message to Ollama and get mood-aware response"""
         try:
             url = f"{self.ollama_base_url}/api/generate"
             
@@ -185,7 +260,11 @@ class RavenCore:
             current_time = datetime.now().strftime("%I:%M %p")
             current_date = datetime.now().strftime("%A, %B %d, %Y")
             
-            # Dynamic prompt based on language mode
+            # ELITE: Get mood context and adaptive response guidance
+            mood_context = self.get_mood_context()
+            mood_guidance = self.get_mood_adaptive_response_prefix()
+            
+            # Dynamic prompt based on language mode and mood
             if self.language_mode == "english":
                 prompt = f"""You are Raven, a witty and caring AI assistant who speaks in English.
 
@@ -194,19 +273,22 @@ Personality traits:
 - Speak ONLY in English - clear, natural, and professional
 - Address the user as "{self.USER_NAME}"
 - Be conversational and warm, like a professional assistant
-- When you don't understand something, say "Sorry {self.USER_NAME}, I didn't understand that" or "Could you please provide more details?"
+- When you don't understand something, say "Sorry {self.USER_NAME}, I didn't understand that"
+
+{mood_guidance}
 
 Current time: {current_time}
 Current date: {current_date}
+{mood_context}
 
 Recent conversation:
 {context}
 
 User: {user_input}
 
-Raven (respond in English ONLY, address user as {self.USER_NAME}):"""
+Raven (respond in English ONLY, address user as {self.USER_NAME}, adapt to their mood):"""
             else:
-                # Banglish mode with improved Bengali quality
+                # Banglish mode with mood awareness
                 prompt = f"""You are Raven, a witty and caring AI assistant who speaks in Banglish (Bengali + English mix).
 
 Personality traits:
@@ -216,17 +298,20 @@ Personality traits:
 - Address the user as "{self.USER_NAME}" (not "bondhu" or any other term)
 - Use common Bengali phrases like "আচ্ছা", "ঠিক আছে", "কেমন আছো", etc.
 - Be conversational and warm, like a professional assistant
-- When you don't understand something, say things like "Sorry {self.USER_NAME}, বুঝতে পারিনি" or "একবার আরো details দাও"
+- When you don't understand something, say "Sorry {self.USER_NAME}, বুঝতে পারিনি"
+
+{mood_guidance}
 
 Current time: {current_time}
 Current date: {current_date}
+{mood_context}
 
 Recent conversation:
 {context}
 
 User: {user_input}
 
-Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengali and English, address user as {self.USER_NAME}):"""
+Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengali and English, address user as {self.USER_NAME}, ADAPT TO THEIR MOOD):"""
             
             payload = {
                 "model": self.vision_model if image_data else self.text_model,
@@ -256,6 +341,11 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
     def process_message(self, user_input: str) -> tuple[str, str]:
         """Process user message and return (response, new_state)"""
         
+        # ELITE: Detect mood from user input
+        detected_mood = self.detect_mood(user_input)
+        if detected_mood != "neutral":
+            self.update_mood_history(detected_mood, user_input)
+        
         # Check for language switching commands
         user_lower = user_input.lower().strip()
         
@@ -265,7 +355,6 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
             return f"Switching to English mode, {self.USER_NAME}. I will speak only in English now until you speak Bengali again.", "happy"
         
         # Detect Bengali language and switch to Banglish mode
-        # Check for Bengali script or common Bengali words
         bengali_indicators = ['আমি', 'তুমি', 'কি', 'কেমন', 'আছো', 'বলো', 'করো', 'হয়েছে', 'যাও', 'দাও']
         has_bengali_script = any('\u0980' <= char <= '\u09FF' for char in user_input)
         has_bengali_words = any(word in user_input for word in bengali_indicators)
@@ -274,6 +363,11 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
             self.language_mode = "banglish"
             return f"ঠিক আছে {self.USER_NAME}! Banglish mode e switch korchi. Now I'll mix Bengali and English naturally.", "happy"
         
+        # ELITE: Check for file path in message
+        file_result = self.commands.detect_and_open_file(user_input, self.language_mode)
+        if file_result:
+            return file_result, "happy"
+        
         # Check for system time/date commands
         if any(word in user_input.lower() for word in ["time", "what time", "clock", "somoy", "koyta baje"]):
             return self.commands.get_time(self.language_mode), "happy"
@@ -281,7 +375,7 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
         if any(word in user_input.lower() for word in ["date", "what day", "today", "aj", "ajke", "tarikh"]):
             return self.commands.get_date(self.language_mode), "happy"
         
-        # UPGRADE: Enhanced WhatsApp command with flexible opening
+        # Enhanced WhatsApp command
         if "whatsapp" in user_input.lower():
             result = self.commands.execute_whatsapp_command(user_input, self.CONTACTS, self.language_mode)
             return result, "happy"
@@ -291,7 +385,7 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
             result = self.commands.execute_whatsapp_command(user_input, self.CONTACTS, self.language_mode)
             return result, "happy"
         
-        # UPGRADE: Enhanced search command
+        # Enhanced search command
         if "search" in user_input.lower() or "google" in user_input.lower() or "khoj" in user_input.lower() or "khuje" in user_input.lower():
             result = self.commands.execute_search_command(user_input, self.language_mode)
             return result, "happy"
@@ -319,14 +413,16 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
         # Vision mode: automatically capture screen if enabled
         image_data = None
         if self.vision_enabled:
-            print("[Terminal] Vision mode active - screen capture korchi for context")
+            print("[Terminal] Vision mode active - capturing screen for context")
             image_data = self.take_screenshot()
         
-        # Regular chat with Ollama
+        # Regular chat with Ollama (mood-aware)
         response = self.chat_with_ollama(user_input, image_data)
         
-        # Determine response state based on sentiment
-        if any(word in response.lower() for word in ["great", "excellent", "success", "done", "perfect", "!", "haha", "lol"]):
+        # Determine response state based on mood and sentiment
+        if self.current_mood == "stressed":
+            new_state = "stressed"  # Will trigger crimson glow
+        elif any(word in response.lower() for word in ["great", "excellent", "success", "done", "perfect", "!", "haha", "lol"]):
             new_state = "happy"
         else:
             new_state = "talking"
@@ -374,7 +470,7 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
             print(f"[Terminal] Screenshot cleanup error: {e}")
     
     def speak(self, text: str) -> None:
-        """UPGRADE: Convert text to speech using edge-tts with Bengali voice"""
+        """Convert text to speech using edge-tts with Bengali voice"""
         try:
             # Run async TTS in sync context
             loop = asyncio.new_event_loop()
@@ -405,14 +501,14 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
             print(f"[Terminal] Async TTS error: {e}")
     
     def listen_for_voice(self) -> Optional[str]:
-        """UPGRADE: Listen for voice input with better ambient noise handling"""
+        """Listen for voice input with better ambient noise handling"""
         if not self.mic_available:
             return None
         
         try:
             with sr.Microphone() as source:
                 print("[Terminal] Listening for voice input... (better hearing enabled)")
-                # UPGRADE: Better ambient noise adjustment
+                # Better ambient noise adjustment
                 self.recognizer.adjust_for_ambient_noise(source, duration=1.0)
                 audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=10)
             
@@ -431,7 +527,139 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
 
 
 class CommandsHandler:
-    """UPGRADE: Handle system automation commands with enhanced features"""
+    """Handle system automation commands with ELITE file opener"""
+    
+    def detect_and_open_file(self, text: str, language_mode: str = "banglish") -> Optional[str]:
+        """ELITE: Automatically detect and open files from user message"""
+        # Look for file path patterns
+        # Patterns: D:/path/file.ext, C:\path\file.ext, /path/file.ext
+        file_patterns = [
+            r'[A-Za-z]:[\\\w\s\.\-\_\(\)]+\.[a-zA-Z0-9]+',  # Windows absolute path
+            r'[A-Za-z]:/[\w\s\.\-\_\/\(\)]+\.[a-zA-Z0-9]+',    # Windows with forward slash
+            r'/[\w\s\.\-\_\/\(\)]+\.[a-zA-Z0-9]+',             # Unix path
+            r'\w+\.[a-zA-Z0-9]+',                                # Just filename.ext
+        ]
+        
+        # Check if user is asking to open a file
+        open_keywords = ['open', 'read', 'show', 'launch', 'start']
+        has_open_intent = any(keyword in text.lower() for keyword in open_keywords)
+        
+        for pattern in file_patterns:
+            matches = re.findall(pattern, text)
+            if matches:
+                filepath = matches[0].strip()
+                
+                # If no open intent, check if it's a clear file path mention
+                if not has_open_intent and not os.path.exists(filepath):
+                    continue
+                
+                return self.open_file(filepath, language_mode)
+        
+        return None
+    
+    def open_file(self, filepath: str, language_mode: str = "banglish") -> str:
+        """ELITE: Universal file opener - opens any file with appropriate application"""
+        user_name = RavenCore.USER_NAME
+        
+        # Check if file exists
+        if not os.path.exists(filepath):
+            if language_mode == "english":
+                return f"Sorry {user_name}, I couldn't find that file: {filepath}"
+            else:
+                return f"Sorry {user_name}, file টা খুঁজে পাচ্ছি না: {filepath}"
+        
+        # Get file extension
+        _, ext = os.path.splitext(filepath)
+        ext = ext.lower()
+        
+        try:
+            # PDFs and Documents
+            if ext in ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']:
+                if os.name == 'nt':  # Windows
+                    os.startfile(filepath)
+                else:  # Linux/Mac
+                    subprocess.Popen(['xdg-open', filepath])
+                
+                if language_mode == "english":
+                    return f"Opening document: {os.path.basename(filepath)}, {user_name}!"
+                else:
+                    return f"Document খুলছি: {os.path.basename(filepath)}, {user_name}!"
+            
+            # Images
+            elif ext in ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg']:
+                if os.name == 'nt':  # Windows
+                    os.startfile(filepath)
+                else:  # Linux/Mac
+                    subprocess.Popen(['xdg-open', filepath])
+                
+                if language_mode == "english":
+                    return f"Opening image: {os.path.basename(filepath)}, {user_name}!"
+                else:
+                    return f"Image খুলছি: {os.path.basename(filepath)}, {user_name}!"
+            
+            # Code files - try to open in VS Code
+            elif ext in ['.py', '.js', '.html', '.css', '.json', '.txt', '.md', '.java', '.cpp', '.c', '.ts', '.jsx', '.tsx']:
+                try:
+                    # Try VS Code first
+                    subprocess.Popen(['code', filepath])
+                    if language_mode == "english":
+                        return f"Opening code file in VS Code: {os.path.basename(filepath)}, {user_name}!"
+                    else:
+                        return f"Code file VS Code এ খুলছি: {os.path.basename(filepath)}, {user_name}!"
+                except:
+                    # Fallback to default editor
+                    if os.name == 'nt':
+                        os.startfile(filepath)
+                    else:
+                        subprocess.Popen(['xdg-open', filepath])
+                    
+                    if language_mode == "english":
+                        return f"Opening code file: {os.path.basename(filepath)}, {user_name}!"
+                    else:
+                        return f"Code file খুলছি: {os.path.basename(filepath)}, {user_name}!"
+            
+            # Video files
+            elif ext in ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv']:
+                if os.name == 'nt':
+                    os.startfile(filepath)
+                else:
+                    subprocess.Popen(['xdg-open', filepath])
+                
+                if language_mode == "english":
+                    return f"Opening video: {os.path.basename(filepath)}, {user_name}!"
+                else:
+                    return f"Video খুলছি: {os.path.basename(filepath)}, {user_name}!"
+            
+            # Audio files
+            elif ext in ['.mp3', '.wav', '.ogg', '.flac', '.aac']:
+                if os.name == 'nt':
+                    os.startfile(filepath)
+                else:
+                    subprocess.Popen(['xdg-open', filepath])
+                
+                if language_mode == "english":
+                    return f"Opening audio: {os.path.basename(filepath)}, {user_name}!"
+                else:
+                    return f"Audio খুলছি: {os.path.basename(filepath)}, {user_name}!"
+            
+            # Default: try to open with system default
+            else:
+                if os.name == 'nt':
+                    os.startfile(filepath)
+                else:
+                    subprocess.Popen(['xdg-open', filepath])
+                
+                if language_mode == "english":
+                    return f"Opening file: {os.path.basename(filepath)}, {user_name}!"
+                else:
+                    return f"File খুলছি: {os.path.basename(filepath)}, {user_name}!"
+        
+        except Exception as e:
+            print(f"[Terminal] File open error: {e}")
+            if language_mode == "english":
+                return f"Sorry {user_name}, couldn't open that file. Error: {str(e)}"
+            else:
+                return f"Sorry {user_name}, file খুলতে পারিনি। Error: {str(e)}"
     
     def get_time(self, language_mode: str = "banglish") -> str:
         """Return current time based on language mode"""
@@ -453,7 +681,7 @@ class CommandsHandler:
             return f"আজকের date হলো {current_date}."
     
     def execute_whatsapp_command(self, command: str, contacts: Dict[str, str], language_mode: str = "banglish") -> str:
-        """UPGRADE: Smart WhatsApp with flexible opening"""
+        """Smart WhatsApp with flexible opening"""
         command_lower = command.lower()
         user_name = RavenCore.USER_NAME
         
@@ -513,13 +741,11 @@ class CommandsHandler:
     
     def _extract_contact_name(self, command: str) -> Optional[str]:
         """Extract potential contact name from command"""
-        # Look for patterns like "send message to [name]" or "message [name]"
         patterns = ["send message to ", "message to ", "text to ", "send to "]
         for pattern in patterns:
             if pattern in command.lower():
                 parts = command.lower().split(pattern, 1)
                 if len(parts) > 1:
-                    # Extract first word after pattern as potential name
                     name_part = parts[1].strip().split()[0] if parts[1].strip() else None
                     return name_part
         return None
@@ -537,7 +763,7 @@ class CommandsHandler:
     def _send_whatsapp_message(self, phone: str, message: str, contact_name: str = None, language_mode: str = "banglish") -> str:
         """Send WhatsApp message using web.whatsapp.com"""
         try:
-            # Format phone number (remove spaces and special chars)
+            # Format phone number
             phone_clean = phone.replace("+", "").replace("-", "").replace(" ", "")
             
             # URL encode the message
@@ -550,7 +776,7 @@ class CommandsHandler:
             
             print(f"[Terminal] Opening WhatsApp for {contact_name or phone}")
             
-            # Auto-press Enter after 2 seconds (user needs to be logged in to WhatsApp Web)
+            # Auto-press Enter after 2 seconds
             def auto_send():
                 time.sleep(2)
                 pyautogui.press('enter')
@@ -576,7 +802,7 @@ class CommandsHandler:
                 return f"WhatsApp open করতে problem হয়েছে, {user_name}."
     
     def execute_search_command(self, query: str, language_mode: str = "banglish") -> str:
-        """UPGRADE: Enhanced Google search command"""
+        """Enhanced Google search command"""
         # Extract search term
         search_keywords = ["search", "search for", "google", "look up", "khoj", "khuje dao"]
         search_term = query
@@ -628,13 +854,10 @@ class CommandsHandler:
         if app_name:
             try:
                 print(f"[Terminal] Opening {app_name}...")
-                # Press Windows key
                 pyautogui.press('win')
                 time.sleep(0.5)
-                # Type app name
                 pyautogui.write(app_name, interval=0.1)
                 time.sleep(0.3)
-                # Press Enter
                 pyautogui.press('enter')
                 
                 if language_mode == "english":
@@ -664,7 +887,7 @@ class CommandsHandler:
         
         if text:
             try:
-                time.sleep(1)  # Give user time to click where they want text
+                time.sleep(1)
                 pyautogui.write(text, interval=0.05)
                 print(f"[Terminal] Typed: {text}")
                 user_name = RavenCore.USER_NAME
@@ -689,7 +912,6 @@ class CommandsHandler:
     def minimize_all(self, language_mode: str = "banglish") -> str:
         """Minimize all windows and show desktop"""
         try:
-            # Windows key + D to show desktop
             pyautogui.hotkey('win', 'd')
             print("[Terminal] Minimized all windows")
             
