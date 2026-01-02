@@ -401,7 +401,8 @@ class CommandsHandler:
             return self._send_whatsapp_message(phone_number, message, contact_name)
         else:
             # Name not in contacts, ask for number
-            return "Contact ta amar list e nei, bondhu. Phone number dao please, tar sathe message ta. Format: +880XXXXXXXXXX"
+            user_name = RavenCore.USER_NAME
+            return f"Contact ta amar list e nei, {user_name}. Phone number dao please, tar sathe message ta. Format: +880XXXXXXXXXX"
     
     def _extract_message_from_command(self, command: str) -> Optional[str]:
         """Extract message from command"""
