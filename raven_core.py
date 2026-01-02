@@ -516,10 +516,10 @@ class CommandsHandler:
                 time.sleep(1)  # Give user time to click where they want text
                 pyautogui.write(text, interval=0.05)
                 print(f"[Terminal] Typed: {text}")
-                return f"Lekha hoyeche: {text}"
+                return f"Lekha hoyeche, {RavenCore.USER_NAME}: {text}"
             except Exception as e:
                 print(f"[Terminal] Type error: {e}")
-                return "Type korte parini, bondhu."
+                return f"Type korte parini, {RavenCore.USER_NAME}."
         
         return "Ki type korbo? Bolo to."
     
