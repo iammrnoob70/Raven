@@ -411,23 +411,49 @@ Raven (respond in Banglish with proper Standard Bengali, naturally mixing Bengal
 class CommandsHandler:
     """UPGRADE: Handle system automation commands with enhanced features"""
     
-    def get_time(self) -> str:
-        """Return current time in Banglish"""
+    def get_time(self, language_mode: str = "banglish") -> str:
+        """Return current time based on language mode"""
         current_time = datetime.now().strftime("%I:%M %p")
-        # Get user name from RavenCore class
         user_name = RavenCore.USER_NAME
-        return f"Ekhon somoy holo {current_time}, {user_name}!"
-    
-    def get_date(self) -> str:
-        """Return current date in Banglish"""
-        current_date = datetime.now().strftime("%A, %B %d, %Y")
-        return f"Ajker date holo {current_date}."
-    
-    def execute_whatsapp_command(self, command: str, contacts: Dict[str, str]) -> str:
-        """UPGRADE: Smart WhatsApp messaging with contacts dictionary"""
-        command_lower = command.lower()
         
-        # Check if a contact name is mentioned
+        if language_mode == "english":
+            return f"The time is {current_time}, {user_name}!"
+        else:
+            return f"এখন সময় হলো {current_time}, {user_name}!"
+    
+    def get_date(self, language_mode: str = "banglish") -> str:
+        """Return current date based on language mode"""
+        current_date = datetime.now().strftime("%A, %B %d, %Y")
+        
+        if language_mode == "english":
+            return f"Today's date is {current_date}."
+        else:
+            return f"আজকের date হলো {current_date}."
+    
+    def execute_whatsapp_command(self, command: str, contacts: Dict[str, str], language_mode: str = "banglish") -> str:
+        """UPGRADE: Smart WhatsApp with flexible opening"""
+        command_lower = command.lower()
+        user_name = RavenCore.USER_NAME
+        
+        # Check if user just wants to open WhatsApp without sending a message
+        open_only_keywords = ["open whatsapp", "whatsapp open", "launch whatsapp", "start whatsapp"]
+        if any(keyword in command_lower for keyword in open_only_keywords) and "send" not in command_lower and "message" not in command_lower:
+            try:
+                webbrowser.open('https://web.whatsapp.com')
+                print("[Terminal] Opening WhatsApp Web")
+                
+                if language_mode == "english":
+                    return f"Opening WhatsApp for you, {user_name}!"
+                else:
+                    return f"WhatsApp খুলছি, {user_name}!"
+            except Exception as e:
+                print(f"[Terminal] WhatsApp open error: {e}")
+                if language_mode == "english":
+                    return f"Couldn't open WhatsApp, {user_name}."
+                else:
+                    return f"WhatsApp খুলতে problem হয়েছে, {user_name}."
+        
+        # Check if a contact name is mentioned for messaging
         contact_name = None
         phone_number = None
         
@@ -441,14 +467,40 @@ class CommandsHandler:
             # Extract message if provided
             message = self._extract_message_from_command(command)
             if not message:
-                return f"Thik ache! {contact_name} ke message pathabo. But ki bolte chao? Type koro message ta."
+                if language_mode == "english":
+                    return f"Okay! I'll message {contact_name}. But what do you want to say? Type the message."
+                else:
+                    return f"ঠিক আছে! {contact_name} কে message পাঠাবো। But কি বলতে চাও? Type করো message টা।"
             
             # Send WhatsApp message
-            return self._send_whatsapp_message(phone_number, message, contact_name)
+            return self._send_whatsapp_message(phone_number, message, contact_name, language_mode)
         else:
-            # Name not in contacts, ask for number
-            user_name = RavenCore.USER_NAME
-            return f"Contact ta amar list e nei, {user_name}. Phone number dao please, tar sathe message ta. Format: +880XXXXXXXXXX"
+            # Extract potential contact name from "send message to [name]"
+            potential_name = self._extract_contact_name(command)
+            
+            if language_mode == "english":
+                if potential_name:
+                    return f"I don't have {potential_name}'s number yet, {user_name}. Please type it once so I can save it, or just tell me to 'open WhatsApp' and you can click their name."
+                else:
+                    return f"I don't have that contact, {user_name}. Please type their number, or just say 'open WhatsApp' and you can find them yourself."
+            else:
+                if potential_name:
+                    return f"{potential_name} এর number আমার কাছে নেই, {user_name}। একবার number টা দাও save করে রাখি, অথবা শুধু 'open WhatsApp' বলো তুমি নিজেই তার name এ click করতে পারবে।"
+                else:
+                    return f"Contact টা আমার list এ নেই, {user_name}। Phone number দাও please, বা শুধু 'open WhatsApp' বলো তুমি নিজে খুঁজে নাও।"
+    
+    def _extract_contact_name(self, command: str) -> Optional[str]:
+        """Extract potential contact name from command"""
+        # Look for patterns like "send message to [name]" or "message [name]"
+        patterns = ["send message to ", "message to ", "text to ", "send to "]
+        for pattern in patterns:
+            if pattern in command.lower():
+                parts = command.lower().split(pattern, 1)
+                if len(parts) > 1:
+                    # Extract first word after pattern as potential name
+                    name_part = parts[1].strip().split()[0] if parts[1].strip() else None
+                    return name_part
+        return None
     
     def _extract_message_from_command(self, command: str) -> Optional[str]:
         """Extract message from command"""
