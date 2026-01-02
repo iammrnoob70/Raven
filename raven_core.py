@@ -440,11 +440,11 @@ class CommandsHandler:
             threading.Thread(target=auto_send, daemon=True).start()
             
             name_text = f"{contact_name} ke" if contact_name else "WhatsApp e"
-            return f"Thik ache! {name_text} message pathachi: '{message}'. 10 seconds e auto-send hobe!"
+            return f"Thik ache, {RavenCore.USER_NAME}! {name_text} message pathachi: '{message}'. 10 seconds e auto-send hobe!"
             
         except Exception as e:
             print(f"[Terminal] WhatsApp error: {e}")
-            return "WhatsApp open korte problem hoyeche, bondhu."
+            return f"WhatsApp open korte problem hoyeche, {RavenCore.USER_NAME}."
     
     def execute_search_command(self, query: str) -> str:
         """UPGRADE: Enhanced Google search command"""
