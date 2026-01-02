@@ -80,28 +80,47 @@ class RavenCore:
         print("[Terminal] Raven Core initialized with Bengali voice and enhanced controls")
         
     def get_greeting(self) -> str:
-        """Generate context-aware Banglish greeting based on time and day"""
+        """Generate context-aware greeting based on time, day, and language mode"""
         now = datetime.now()
         hour = now.hour
         day_name = now.strftime("%A")
         
-        # Time-based Banglish greeting with user's name
-        if 5 <= hour < 12:
-            greeting = f"Suprabhat! Good morning, {self.USER_NAME}!"
-        elif 12 <= hour < 17:
-            greeting = f"Good afternoon, {self.USER_NAME}! Kemon acho?"
-        elif 17 <= hour < 22:
-            greeting = f"Good evening, {self.USER_NAME}! Shondha belar shubhechha!"
+        if self.language_mode == "english":
+            # Pure English greeting
+            if 5 <= hour < 12:
+                greeting = f"Good morning, {self.USER_NAME}!"
+            elif 12 <= hour < 17:
+                greeting = f"Good afternoon, {self.USER_NAME}!"
+            elif 17 <= hour < 22:
+                greeting = f"Good evening, {self.USER_NAME}!"
+            else:
+                greeting = f"Hello {self.USER_NAME}! Still up late?"
+            
+            # Add day context
+            if day_name in ["Saturday", "Sunday"]:
+                day_context = f"It's {day_name}, enjoy your weekend!"
+            else:
+                day_context = f"It's {day_name}, how's your day going?"
+            
+            return f"{greeting} {day_context}"
         else:
-            greeting = f"Hello {self.USER_NAME}! Rat e jaglei to!"
-        
-        # Add day context in Banglish
-        if day_name in ["Saturday", "Sunday"]:
-            day_context = f"Aj to {day_name}, weekend enjoy koro!"
-        else:
-            day_context = f"Aj {day_name}, kemon cholche din ta?"
-        
-        return f"{greeting} {day_context}"
+            # Banglish greeting with proper Bengali
+            if 5 <= hour < 12:
+                greeting = f"সুপ্রভাত! Good morning, {self.USER_NAME}!"
+            elif 12 <= hour < 17:
+                greeting = f"Good afternoon, {self.USER_NAME}! কেমন আছো?"
+            elif 17 <= hour < 22:
+                greeting = f"Good evening, {self.USER_NAME}! সন্ধ্যা বেলার শুভেচ্ছা!"
+            else:
+                greeting = f"Hello {self.USER_NAME}! রাত এ জাগলে তো!"
+            
+            # Add day context in Banglish
+            if day_name in ["Saturday", "Sunday"]:
+                day_context = f"আজ তো {day_name}, weekend enjoy করো!"
+            else:
+                day_context = f"আজ {day_name}, কেমন চলছে দিন টা?"
+            
+            return f"{greeting} {day_context}"
     
     def load_memory(self) -> None:
         """Load last 20 messages from memory on startup"""
